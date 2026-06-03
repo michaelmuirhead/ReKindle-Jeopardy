@@ -570,7 +570,12 @@ export default function BibleJeopardy() {
 
   const deductPoints = (teamIdx, pts) => {
     sounds.wrong();
-    setTeams(teams.map((t, i) => i === teamIdx ? { ...t, score: Math.max(0, t.score - pts) } : t));
+    setTeams(prev => prev.map((t, i) => i === teamIdx ? { ...t, score: Math.max(0, t.score - pts) } : t));
+  };
+
+  const awardPointsOnly = (teamIdx, pts) => {
+    sounds.correct();
+    setTeams(prev => prev.map((t, i) => i === teamIdx ? { ...t, score: t.score + pts } : t));
   };
 
   const closeQuestion = (currentTeams = teams) => {
@@ -624,6 +629,7 @@ export default function BibleJeopardy() {
         ddPhase={ddPhase} setDdPhase={setDdPhase}
         revealed={revealed} setRevealed={setRevealed}
         teams={teams} onAward={awardPoints} onDeduct={deductPoints}
+        onAwardOnly={awardPointsOnly}
         onClose={closeQuestion} multiChoice={multiChoice}
       />
     );
@@ -768,11 +774,12 @@ function BoardScreen({ categories, teams, used, onSelect, onReset }) {
 /* ══════════════════════════════════════════
    QUESTION SCREEN
 ══════════════════════════════════════════ */
-function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose, multiChoice }) {
+function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onAwardOnly, onClose, multiChoice }) {
   const [ddTeamIdx, setDdTeamIdx]   = useState(null);
   const [ddWager, setDdWager]       = useState(null);
   const [wagerInput, setWagerInput] = useState("");
   const [wagerError, setWagerError] = useState("");
+  const [mcJudged, setMcJudged]     = useState({});
 
   // Generate choices once on mount (stable for this question's lifetime)
   const [choices] = useState(() => {
@@ -959,8 +966,50 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
                       -{dollar(effectivePts)} {teams[ddTeamIdx].name} (wrong answer)
                     </span>
                   </>
+                ) : multiChoice ? (
+                  /* MC mode: per-team judging cards + DONE button */
+                  <>
+                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>JUDGE EACH TEAM</div>
+                    <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
+                      {teams.map((t, i) => {
+                        const judgedResult = mcJudged[i];
+                        const isJudged = judgedResult !== undefined;
+                        return (
+                          <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 22px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:14, minWidth:190, flex:1, maxWidth:260 }}>
+                            <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+                            <div style={{ fontSize:24, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>{dollar(t.score)}</div>
+                            {!isJudged ? (
+                              <div style={{ display:"flex", gap:8 }}>
+                                <button onClick={() => { onAwardOnly(i, effectivePts); setMcJudged(prev => ({ ...prev, [i]: true })); }} className="award-hover"
+                                  style={{ padding:"10px 14px", background:"rgba(34,197,94,0.18)", border:"2px solid #22c55e", borderRadius:10, color:"#22c55e", fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s" }}>
+                                  ✓ CORRECT
+                                </button>
+                                <button onClick={() => { onDeduct(i, effectivePts); setMcJudged(prev => ({ ...prev, [i]: false })); }} className="award-hover"
+                                  style={{ padding:"10px 14px", background:"rgba(244,63,94,0.18)", border:"2px solid #f43f5e", borderRadius:10, color:"#f43f5e", fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s" }}>
+                                  ✗ WRONG
+                                </button>
+                              </div>
+                            ) : (
+                              <div style={{ textAlign:"center" }}>
+                                <div style={{ fontSize:20, fontWeight:700, color: judgedResult ? "#22c55e" : "#f43f5e", letterSpacing:2 }}>
+                                  {judgedResult ? `+${dollar(effectivePts)}` : `-${dollar(effectivePts)}`}
+                                </div>
+                                <div style={{ fontSize:12, color:"rgba(255,255,255,0.35)", letterSpacing:3, marginTop:2 }}>
+                                  {judgedResult ? "CORRECT" : "WRONG"}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button onClick={onClose} className="reveal-hover"
+                      style={{ marginTop:6, padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                      DONE — BACK TO BOARD
+                    </button>
+                  </>
                 ) : (
-                  /* Normal: all teams */
+                  /* Open-answer mode: award one team and auto-close */
                   <>
                     <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>AWARD POINTS TO</div>
                     <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
