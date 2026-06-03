@@ -1603,7 +1603,7 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
                     </span>
                     <span style={{ fontSize:24, lineHeight:1.3,
                       color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "white",
-                      fontWeight: correct ? 600 : 400 }}>
+                      fontWeight: correct ? 600 : 400, textTransform:"uppercase" }}>
                       {choice.text}
                     </span>
                   </div>
@@ -1616,7 +1616,7 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
           {!multiChoice && revealed && (
             <div style={{ width:"100%", maxWidth:1400, background:"rgba(255,215,0,0.08)", border:"3px solid #ffd700", borderRadius:16, padding:"28px 60px", marginBottom:32, textAlign:"center", animation:"answerReveal 0.3s ease", transformOrigin:"top" }}>
               <div style={{ fontSize:13, color:"#ffd700", letterSpacing:5, marginBottom:10 }}>ANSWER</div>
-              <div style={{ fontSize:42, color:"white", fontWeight:600, letterSpacing:1 }}>{q.a}</div>
+              <div style={{ fontSize:42, color:"white", fontWeight:600, letterSpacing:1, textTransform:"uppercase" }}>{q.a}</div>
             </div>
           )}
 
@@ -1860,7 +1860,7 @@ function FinalJeopardyScreen({ question, teams, onComplete }) {
           {/* Answer box */}
           <div style={{ width:"100%", maxWidth:1200, background:"rgba(255,215,0,0.08)", border:"3px solid #ffd700", borderRadius:14, padding:"18px 40px", textAlign:"center", animation:"answerReveal 0.35s ease", transformOrigin:"top" }}>
             <div style={{ fontSize:12, color:"#ffd700", letterSpacing:5, marginBottom:8 }}>CORRECT ANSWER</div>
-            <div style={{ fontSize:32, color:"white", fontWeight:600, letterSpacing:1 }}>{question.a}</div>
+            <div style={{ fontSize:32, color:"white", fontWeight:600, letterSpacing:1, textTransform:"uppercase" }}>{question.a}</div>
           </div>
 
           {/* Team judging cards */}
