@@ -1147,8 +1147,8 @@ export default function BibleJeopardy() {
   const [fjQuestion, setFjQuestion]           = useState(null);
   const [multiChoice, setMultiChoice]         = useState(false);
 
-  const buildGame = () => {
-    const cats = shuffle(ALL_CATEGORIES).slice(0, 6);
+  const buildGame = (customCats = null) => {
+    const cats = customCats || shuffle(ALL_CATEGORIES).slice(0, 6);
     const questions = {};
     for (const cat of cats) {
       questions[cat] = {};
@@ -1160,8 +1160,8 @@ export default function BibleJeopardy() {
     return { cats, questions };
   };
 
-  const startGame = () => {
-    const { cats, questions } = buildGame();
+  const startGame = (customCats = null) => {
+    const { cats, questions } = buildGame(customCats);
     setGameCategories(cats);
     setGameQuestions(questions);
     const ddCat = cats[Math.floor(Math.random() * cats.length)];
@@ -1262,11 +1262,27 @@ export default function BibleJeopardy() {
    SETUP SCREEN
 ══════════════════════════════════════════ */
 function SetupScreen({ teams, setTeams, numTeams, setNumTeams, multiChoice, setMultiChoice, onStart }) {
-  return (
-    <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Oswald', sans-serif" }}>
-      <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 50% 0%, #0d1f6e 0%, #060b2e 70%)", zIndex:0 }} />
+  const [catMode, setCatMode] = useState("random");
+  const [pickedCats, setPickedCats] = useState([]);
 
-      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:32, width:680 }}>
+  const toggleCat = (cat) => {
+    setPickedCats(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : prev.length < 6 ? [...prev, cat] : prev
+    );
+  };
+
+  const canStart = catMode === "random" || pickedCats.length === 6;
+
+  const handleStart = () => {
+    if (!canStart) return;
+    onStart(catMode === "custom" ? pickedCats : null);
+  };
+
+  return (
+    <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Oswald', sans-serif", overflowY:"auto" }}>
+      <div style={{ position:"fixed", inset:0, background:"radial-gradient(ellipse at 50% 0%, #0d1f6e 0%, #060b2e 70%)", zIndex:0 }} />
+
+      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:28, width:720, padding:"40px 0" }}>
         <div style={{ textAlign:"center" }}>
           <div style={{ fontSize:18, color:"#7ec8e3", letterSpacing:8, marginBottom:8, fontWeight:400 }}>REKINDLE STUDENTS PRESENTS</div>
           <div style={{ fontSize:96, fontWeight:700, color:"#ffd700", letterSpacing:6, lineHeight:1, textShadow:"0 0 40px rgba(255,215,0,0.5), 0 4px 0 #b8860b" }}>BIBLE</div>
@@ -1317,9 +1333,53 @@ function SetupScreen({ teams, setTeams, numTeams, setNumTeams, multiChoice, setM
             </div>
           </div>
 
-          <button onClick={onStart}
-            style={{ marginTop:8, padding:"22px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:12, fontSize:26, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.2s" }}>
-            START GAME
+          <div>
+            <div style={{ color:"#7ec8e3", fontSize:14, letterSpacing:4, marginBottom:14 }}>CATEGORIES</div>
+            <div style={{ display:"flex", gap:12, marginBottom: catMode === "custom" ? 16 : 0 }}>
+              {[["RANDOM (6)", "random"], ["CHOOSE MINE", "custom"]].map(([label, mode]) => {
+                const active = catMode === mode;
+                return (
+                  <button key={mode} onClick={() => { setCatMode(mode); setPickedCats([]); }}
+                    style={{ flex:1, height:52, borderRadius:10, border: active ? "3px solid #ffd700" : "2px solid rgba(255,255,255,0.2)", background: active ? "rgba(255,215,0,0.15)" : "transparent", color: active ? "#ffd700" : "rgba(255,255,255,0.5)", fontSize:16, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:2, transition:"all 0.2s" }}>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {catMode === "custom" && (
+              <div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:8 }}>
+                  {ALL_CATEGORIES.map(cat => {
+                    const picked = pickedCats.includes(cat);
+                    const disabled = !picked && pickedCats.length >= 6;
+                    return (
+                      <button key={cat} onClick={() => toggleCat(cat)}
+                        disabled={disabled}
+                        style={{
+                          padding:"10px 8px", borderRadius:8, fontSize:13, fontWeight:600,
+                          fontFamily:"'Oswald',sans-serif", letterSpacing:1, cursor: disabled ? "not-allowed" : "pointer",
+                          transition:"all 0.15s", textAlign:"center", lineHeight:1.2,
+                          border: picked ? "2px solid #ffd700" : "2px solid rgba(255,255,255,0.15)",
+                          background: picked ? "rgba(255,215,0,0.18)" : "rgba(255,255,255,0.04)",
+                          color: picked ? "#ffd700" : disabled ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.65)",
+                          opacity: disabled ? 0.5 : 1,
+                        }}>
+                        {cat}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ marginTop:12, textAlign:"center", fontSize:15, letterSpacing:3, color: pickedCats.length === 6 ? "#4ade80" : "#7ec8e3" }}>
+                  {pickedCats.length} / 6 SELECTED{pickedCats.length === 6 ? " ✓" : ""}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button onClick={handleStart} disabled={!canStart}
+            style={{ marginTop:8, padding:"22px", background: canStart ? "linear-gradient(180deg,#ffd700,#c8a000)" : "rgba(255,255,255,0.08)", color: canStart ? "#060b2e" : "rgba(255,255,255,0.25)", border:"none", borderRadius:12, fontSize:26, fontWeight:700, letterSpacing:5, cursor: canStart ? "pointer" : "not-allowed", fontFamily:"'Oswald',sans-serif", boxShadow: canStart ? "0 4px 24px rgba(255,215,0,0.4)" : "none", transition:"all 0.2s" }}>
+            {catMode === "custom" && pickedCats.length < 6 ? `CHOOSE ${6 - pickedCats.length} MORE` : "START GAME"}
           </button>
         </div>
       </div>
