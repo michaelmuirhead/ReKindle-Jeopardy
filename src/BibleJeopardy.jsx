@@ -300,6 +300,33 @@ const QUESTION_BANK = {
       { q: "In Romans 11, Paul uses what agricultural image to explain how Gentiles have been included in God's family alongside Israel?", a: "An olive tree — Gentiles are wild branches grafted in (Romans 11:17-24)" },
     ],
   },
+  "Name That Verse": {
+    200: [
+      { q: "\"For God so loved the world that He gave His only begotten Son, that whoever believes in Him should not perish but have everlasting life.\"", a: "John 3:16" },
+      { q: "\"The Lord is my shepherd; I shall not want.\"", a: "Psalm 23:1" },
+      { q: "\"I can do all things through Christ who strengthens me.\"", a: "Philippians 4:13" },
+    ],
+    400: [
+      { q: "\"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways acknowledge Him, and He shall direct your paths.\"", a: "Proverbs 3:5-6" },
+      { q: "\"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you a hope and a future.\"", a: "Jeremiah 29:11" },
+      { q: "\"And we know that all things work together for good to those who love God, to those who are called according to His purpose.\"", a: "Romans 8:28" },
+    ],
+    600: [
+      { q: "\"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.\"", a: "Joshua 1:9" },
+      { q: "\"But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.\"", a: "Isaiah 40:31" },
+      { q: "\"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.\"", a: "Philippians 4:6" },
+    ],
+    800: [
+      { q: "\"For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.\"", a: "Romans 6:23" },
+      { q: "\"If my people, who are called by my name, will humble themselves and pray and seek my face and turn from their wicked ways, then I will hear from heaven and will heal their land.\"", a: "2 Chronicles 7:14" },
+      { q: "\"Submit yourselves therefore to God. Resist the devil, and he will flee from you.\"", a: "James 4:7" },
+    ],
+    1000: [
+      { q: "\"For it is by grace you have been saved, through faith — and this is not from yourselves, it is the gift of God — not by works, so that no one can boast.\"", a: "Ephesians 2:8-9" },
+      { q: "\"No weapon forged against you will prevail, and you will refute every tongue that accuses you. This is the heritage of the servants of the Lord.\"", a: "Isaiah 54:17" },
+      { q: "\"Now faith is confidence in what we hope for and assurance about what we do not see.\"", a: "Hebrews 11:1" },
+    ],
+  },
 };
 
 const ALL_CATEGORIES = Object.keys(QUESTION_BANK);
