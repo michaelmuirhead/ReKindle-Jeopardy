@@ -1030,29 +1030,62 @@ const DISTRACTOR_POOLS = {
     "Isaiah 54:17","John 14:6","Acts 2:38","Matthew 5:8",
   ],
   "Disney": [
+    // Heroes and princesses
     "Elsa","Anna","Moana","Rapunzel","Ariel","Belle","Tiana","Mulan","Merida","Cinderella",
-    "Simba","Nemo","Woody","Buzz Lightyear","Mike Wazowski","Lightning McQueen","WALL-E","Remy",
-    "Frozen","The Lion King","Finding Nemo","Toy Story","Moana","Encanto","Coco","Up","Brave","Ratatouille",
-    "Ursula","Scar","Jafar","Maleficent","Gaston","Hades","Mother Gothel","Hans",
-    "1937","1994","1989","2003","2013","2016","2017","2021",
-    "Pixar","Walt Disney","DreamWorks","Blue Sky Studios",
+    "Aurora","Snow White","Jasmine","Pocahontas","Mirabel","Isabela","Luisa","Dolores",
+    // Supporting and side characters
+    "Simba","Nemo","Dory","Woody","Buzz Lightyear","Mike Wazowski","Sulley","Lightning McQueen",
+    "WALL-E","Remy","Carl Fredricksen","Russell","Stitch","Miguel","Joy","Sadness","Olaf",
+    // Villains
+    "Ursula","Scar","Jafar","Maleficent","Gaston","Hades","Mother Gothel","Hans","Yzma","Tamatoa",
+    // Movie titles
+    "Frozen","The Lion King","Finding Nemo","Toy Story","Moana","Encanto","Coco",
+    "Up","Brave","Ratatouille","The Incredibles","Inside Out","Zootopia","Tangled",
+    "The Little Mermaid","Beauty and the Beast","Aladdin","Lilo & Stitch",
+    "A Bug's Life","Monsters Inc.","Sleeping Beauty","Fantasia","The Princess and the Frog",
   ],
   "Video Games": [
-    "Mario","Link","Zelda","Kirby","Pikachu","Sonic","Donkey Kong","Samus","Fox McCloud",
-    "Minecraft","Fortnite","Among Us","Roblox","Stardew Valley","Undertale","Valorant","Apex Legends",
-    "Nintendo","Sony","Microsoft","Sega","Valve","Riot Games","Blizzard","InnerSloth",
-    "Nintendo Switch","PlayStation","Xbox","PC","Wii","GameBoy",
-    "1985","1994","1996","2011","2013","2017","2020",
-    "RPG","FPS","Battle Royale","MOBA","Sandbox","Roguelike",
-    "Creeper","Ender Dragon","Netherite","Triforce","Robux","Joy-Cons",
+    // Characters
+    "Mario","Luigi","Link","Princess Peach","Kirby","Samus","Fox McCloud",
+    "Sonic","Donkey Kong","Yoshi","Bowser","Ganondorf","Princess Zelda","Toad",
+    "Steve","Creeper","Enderman","Ender Dragon","Ghast","Wither",
+    // Game titles
+    "Minecraft","Fortnite","Among Us","Roblox","Stardew Valley","Undertale","Valorant",
+    "Apex Legends","Overwatch","Hades","Fall Guys","Animal Crossing","Splatoon",
+    "Super Mario Bros.","The Legend of Zelda","Super Smash Bros.","Mario Kart","Mario Party",
+    "Tetris","Pac-Man","Street Fighter","Mega Man",
+    // Companies and platforms
+    "Nintendo","Sony PlayStation","Microsoft Xbox","Sega","Valve","Riot Games",
+    "Blizzard Entertainment","InnerSloth","Mojang","Epic Games","Supergiant Games",
+    "Nintendo Switch","PlayStation 5","Xbox Series X","Nintendo 64","Super Nintendo",
+    // In-game items and concepts
+    "Triforce","Robux","Netherite","Blue Shell","Joy-Cons","Master Sword","Fire Flower","Golden Apple",
   ],
   "Gen Alpha Slang": [
-    "no cap","cap","bussin","mid","fire","slay","rizz","sus","lowkey","highkey",
-    "based","delulu","sigma","NPC","era","aura","glazing","ratio","cooked","periodt",
-    "W","L","fr fr","sheesh","it's giving","main character","rent free","vibe check",
-    "touch grass","brain rot","the ick","stan","built different","chronically online",
-    "Kai Cenat","Fanum","DaFuqBoom","Skibidi Toilet","Ohio","sigma grindset",
-    "on God","no shot","log off","caught an L","W rizz","zero aura",
+    // Creator / content names — for "who coined this" or "what show is this" questions
+    "IShowSpeed","MrBeast","xQc","Dream","Ninja","Markiplier",
+    "NPC Streams","Ohio Edits","Brainrot Clips","Subway Surfers Videos",
+    // Slang terms — for questions where the answer itself is a slang word
+    "brain rot","delulu","sigma","rizz","glazing","periodt","cooked","based",
+    // Definition-style phrases — for the majority of "what does this mean?" questions
+    "They're joking around or being sarcastic",
+    "That's totally embarrassing",
+    "They're extremely excited or hyped up",
+    "They're completely confused or lost",
+    "It's outdated and no longer cool",
+    "They're showing off or bragging",
+    "A close friend or loyal teammate",
+    "They got caught doing something wrong",
+    "They're trying too hard to fit in",
+    "That makes absolutely no sense",
+    "Someone who follows every trend mindlessly",
+    "An expression of total disbelief",
+    "They're being dramatic on purpose",
+    "That's surprisingly impressive",
+    "They're giving up entirely",
+    "Something going viral right now",
+    "They're secretly jealous of someone",
+    "They refuse to participate or engage",
   ],
 };
 
