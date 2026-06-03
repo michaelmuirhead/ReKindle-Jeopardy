@@ -55,6 +55,14 @@ export const sounds = {
     tone(150, 0.22, "sawtooth", 0.2, 0.2);
   },
 
+  finalReveal() {
+    // Dramatic descend then sustain
+    tone(1047, 0.22, "triangle", 0.45, 0);
+    tone(784,  0.22, "triangle", 0.45, 0.24);
+    tone(659,  0.22, "triangle", 0.45, 0.48);
+    tone(523,  0.9,  "triangle", 0.4,  0.72);
+  },
+
   winner() {
     // Four-note fanfare then held chord
     const run = [523, 659, 784, 1047];

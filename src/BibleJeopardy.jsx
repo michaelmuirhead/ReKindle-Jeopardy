@@ -344,10 +344,98 @@ const QUESTION_BANK = {
   },
 };
 
+/* ── Final Jeopardy Question Pool ── */
+const FINAL_JEOPARDY_QUESTIONS = [
+  { category: "Books of the Bible",      q: "This is the only book of the Bible that never once mentions the name of God. It tells the story of how the Jewish people were saved from genocide through their queen's courageous act of faith.", a: "The Book of Esther" },
+  { category: "Revelation",              q: "The Apostle John received his visions of the end times while exiled on a small island in the Aegean Sea. Name that island, and the verse where John tells us where he was.", a: "Patmos (Revelation 1:9)" },
+  { category: "Bible Firsts",            q: "God referred to this man as a 'prophet' in Genesis 20:7 — the first time that specific title appears anywhere in the entire Bible. Who was he?", a: "Abraham (Genesis 20:7)" },
+  { category: "The Road to Emmaus",      q: "On Resurrection Sunday, two disciples walked to the village of Emmaus with a stranger they didn't recognize. According to Luke 24, what happened the instant they recognized that the stranger was Jesus?", a: "He vanished — disappeared from their sight (Luke 24:31)" },
+  { category: "The Ten Commandments",    q: "The Ten Commandments appear twice in the Bible — once in Exodus 20 and once in another book of Moses. Name that second book and the chapter.", a: "Deuteronomy 5" },
+  { category: "Before Pentecost",        q: "According to Acts 1:15, approximately how many disciples were gathered together in Jerusalem between the Ascension of Jesus and the Day of Pentecost?", a: "About 120 people (Acts 1:15)" },
+  { category: "Words from the Cross",    q: "Jesus spoke seven statements from the cross. In one of them, He entrusted His mother's care to a beloved disciple. What did He say to that disciple, and who was the disciple?", a: "\"Behold your mother\" — the Apostle John (John 19:27)" },
+  { category: "Isaiah 53",               q: "Isaiah 53:9 contains a prophecy fulfilled at the crucifixion concerning two contrasting aspects of Jesus' death and burial. What does it say?", a: "He was assigned a grave with the wicked (crucified between criminals), yet with a rich man in His death (buried in Joseph of Arimathea's tomb)" },
+  { category: "The Gospel of John",      q: "The Gospel of John contains seven 'I AM' statements of Jesus. Name at least four of them.", a: "Bread of life; Light of the world; the Door/Gate; the Good Shepherd; the Resurrection and the Life; the Way, the Truth and the Life; the True Vine" },
+  { category: "The Early Church",        q: "After the stoning of Stephen, the church was scattered by persecution. One of the seven original deacons went to Samaria and later explained Isaiah 53 to a royal official from Africa riding in a chariot. Who was this deacon?", a: "Philip (Acts 8)" },
+];
+
 const ALL_CATEGORIES = Object.keys(QUESTION_BANK);
 const POINT_VALUES = [200, 400, 600, 800, 1000];
 const TEAM_COLORS = ["#06b6d4", "#f43f5e", "#a3e635", "#f97316"];
 const TEAM_BG = ["rgba(6,182,212,0.18)", "rgba(244,63,94,0.18)", "rgba(163,230,53,0.18)", "rgba(249,115,22,0.18)"];
+
+/* ── Distractor pools (one per category) ── */
+const DISTRACTOR_POOLS = {
+  "Characters": [
+    "Moses","Abraham","David","Solomon","Elijah","Jonah","Joseph","Samson",
+    "Daniel","Noah","Isaiah","Nehemiah","Jacob","Paul","Peter","Joshua",
+    "Gideon","Caleb","King Saul","Ezekiel","John the Baptist","Jeremiah",
+  ],
+  "Life of Jesus": [
+    "Bethlehem","Nazareth","Jerusalem","Jericho","Capernaum",
+    "40 days","3 days","7 days","12 years","30 years",
+    "Peter","James","John","Andrew","Mary","Galilee","Matthew","Luke",
+  ],
+  "Miracles": [
+    "5 loaves and 2 fish","Lazarus","The Red Sea","Naaman","Jericho",
+    "Manna","Peter","Elijah","Elisha","The Jordan River",
+    "Uzzah","Moses","Cana","Bethesda","The Sea of Galilee",
+  ],
+  "Women of the Bible": [
+    "Ruth","Rahab","Mary","Mary Magdalene","Miriam","Sarah",
+    "Esther","Deborah","Delilah","Lydia","Priscilla","Anna",
+    "Naomi","Bathsheba","Hannah","Abigail","Elizabeth","Leah","Rachel",
+  ],
+  "Numbers & Facts": [
+    "3","7","10","12","30","40","50","66","120","150",
+    "3 days","7 days","40 days","40 years","3 years",
+    "500 people","969 years","153 fish","144,000","12 tribes",
+  ],
+  "The Early Church": [
+    "Jerusalem","Antioch","Corinth","Ephesus","Rome","Philippi",
+    "Peter","Paul","Barnabas","Stephen","Philip","Ananias",
+    "Cornelius","Rhoda","Silas","Timothy","Apollos","Malta","Pentecost",
+  ],
+  "Prophets": [
+    "Elijah","Elisha","Isaiah","Jeremiah","Ezekiel","Daniel",
+    "Hosea","Micah","Jonah","Amos","Zechariah","Malachi",
+    "Nahum","Habakkuk","Joel","Obadiah","Haggai","Zephaniah",
+  ],
+  "Psalms & Proverbs": [
+    "Psalm 1","Psalm 22","Psalm 23","Psalm 27","Psalm 46","Psalm 51",
+    "Psalm 91","Psalm 100","Psalm 119","Psalm 139",
+    "Proverbs 3:5-6","Proverbs 4:23","Proverbs 16:18","Proverbs 22:6","Proverbs 31",
+    "Solomon","David","Asaph","176 verses","73 Psalms",
+  ],
+  "Creation & Genesis": [
+    "Adam","Eve","Noah","Abraham","Isaac","Jacob","Joseph",
+    "Cain","Abel","Lot","Haran","Canaan",
+    "Garden of Eden","Mount Ararat","Day 1","Day 3","Day 6",
+    "Rainbow","50 chapters","Sodom","Gomorrah",
+  ],
+  "Kings & Kingdoms": [
+    "King Saul","David","Solomon","Rehoboam","Ahab","Jehoshaphat",
+    "Hezekiah","Josiah","Manasseh","Nebuchadnezzar","Asa",
+    "Israel","Judah","Babylon","Assyria","Nathan","Elijah",
+    "Three kings","Sixty years","Forty years",
+  ],
+  "Paul's Letters": [
+    "Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians",
+    "Philippians","Colossians","1 Thessalonians","1 Timothy","2 Timothy",
+    "Titus","Philemon","Hebrews",
+    "Corinth","Ephesus","Rome","Antioch","Thessalonica",
+    "Habakkuk","Isaiah","Abraham","Moses",
+  ],
+  "Name That Verse": [
+    "John 3:16","Psalm 23:1","Romans 8:28","Jeremiah 29:11",
+    "Philippians 4:13","Proverbs 3:5-6","Isaiah 40:31","Matthew 7:7",
+    "Hebrews 11:1","Galatians 2:20","Romans 6:23","Joshua 1:9",
+    "1 Peter 5:7","Romans 12:2","James 4:7","Ephesians 2:8-9",
+    "Psalm 46:10","Genesis 1:1","John 11:35","1 Corinthians 13:4",
+    "Psalm 119:105","Matthew 11:28","Psalm 37:4","Psalm 118:24",
+    "2 Chronicles 7:14","John 15:13","John 10:10","1 Thessalonians 5:16-18",
+    "Isaiah 54:17","John 14:6","Acts 2:38","Matthew 5:8",
+  ],
+};
 
 /* ── Helpers ── */
 function dollar(n) { return `$${n}`; }
@@ -359,6 +447,23 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function generateChoices(correctAnswer, pool) {
+  const ca = correctAnswer.toLowerCase().trim();
+  // Exclude exact matches and items that start with the same word
+  let candidates = pool.filter(item => {
+    const p = item.toLowerCase().trim();
+    return p !== ca && !p.startsWith(ca + " ") && !ca.startsWith(p + " ");
+  });
+  if (candidates.length < 3) {
+    candidates = pool.filter(item => item.toLowerCase().trim() !== ca);
+  }
+  return shuffle([correctAnswer, ...shuffle(candidates).slice(0, 3)]).map((text, i) => ({
+    label: ["A", "B", "C", "D"][i],
+    text,
+    correct: text === correctAnswer,
+  }));
 }
 
 /* ── CSS injected once ── */
@@ -417,8 +522,11 @@ export default function BibleJeopardy() {
   const [winner, setWinner]             = useState(null);
   const [dailyDouble, setDailyDouble]   = useState(null);
   const [ddPhase, setDdPhase]           = useState(false);
-  const [gameCategories, setGameCategories] = useState([]);
-  const [gameQuestions, setGameQuestions]   = useState({});
+  const [gameCategories, setGameCategories]   = useState([]);
+  const [gameQuestions, setGameQuestions]     = useState({});
+  const [showFinalJeopardy, setShowFinalJeopardy] = useState(false);
+  const [fjQuestion, setFjQuestion]           = useState(null);
+  const [multiChoice, setMultiChoice]         = useState(false);
 
   const buildGame = () => {
     const cats = shuffle(ALL_CATEGORIES).slice(0, 6);
@@ -455,8 +563,9 @@ export default function BibleJeopardy() {
 
   const awardPoints = (teamIdx, pts) => {
     sounds.correct();
-    setTeams(teams.map((t, i) => i === teamIdx ? { ...t, score: t.score + pts } : t));
-    closeQuestion();
+    const updatedTeams = teams.map((t, i) => i === teamIdx ? { ...t, score: t.score + pts } : t);
+    setTeams(updatedTeams);
+    closeQuestion(updatedTeams);
   };
 
   const deductPoints = (teamIdx, pts) => {
@@ -464,14 +573,15 @@ export default function BibleJeopardy() {
     setTeams(teams.map((t, i) => i === teamIdx ? { ...t, score: Math.max(0, t.score - pts) } : t));
   };
 
-  const closeQuestion = () => {
+  const closeQuestion = (currentTeams = teams) => {
     const newUsed = { ...used, [selected.key]: true };
     setUsed(newUsed);
     setSelected(null); setRevealed(false); setDdPhase(false);
     setScreen("board");
     if (Object.keys(newUsed).length === gameCategories.length * POINT_VALUES.length) {
-      const max = Math.max(...teams.map(t => t.score));
-      setWinner(teams.filter(t => t.score === max));
+      const fj = FINAL_JEOPARDY_QUESTIONS[Math.floor(Math.random() * FINAL_JEOPARDY_QUESTIONS.length)];
+      setFjQuestion(fj);
+      setShowFinalJeopardy(true);
     }
   };
 
@@ -479,16 +589,31 @@ export default function BibleJeopardy() {
     setUsed({}); setSelected(null); setRevealed(false);
     setWinner(null); setDdPhase(false); setScreen("setup");
     setGameCategories([]); setGameQuestions({});
+    setShowFinalJeopardy(false); setFjQuestion(null);
     setTeams(teams.map(t => ({ ...t, score: 0 })));
   };
 
   const isDailyDouble = selected && selected.key === dailyDouble;
 
   /* ── SETUP ── */
-  if (screen === "setup") return <SetupScreen teams={teams} setTeams={setTeams} numTeams={numTeams} setNumTeams={setNumTeams} onStart={startGame} />;
+  if (screen === "setup") return <SetupScreen teams={teams} setTeams={setTeams} numTeams={numTeams} setNumTeams={setNumTeams} multiChoice={multiChoice} setMultiChoice={setMultiChoice} onStart={startGame} />;
 
   /* ── WINNER ── */
   if (winner) return <WinnerScreen winner={winner} teams={teams} onReset={resetGame} />;
+
+  /* ── FINAL JEOPARDY ── */
+  if (showFinalJeopardy && fjQuestion) return (
+    <FinalJeopardyScreen
+      question={fjQuestion}
+      teams={teams}
+      onComplete={(updatedTeams) => {
+        setTeams(updatedTeams);
+        const max = Math.max(...updatedTeams.map(t => t.score));
+        setWinner(updatedTeams.filter(t => t.score === max));
+        setShowFinalJeopardy(false);
+      }}
+    />
+  );
 
   /* ── QUESTION ── */
   if (screen === "question" && selected) {
@@ -499,7 +624,7 @@ export default function BibleJeopardy() {
         ddPhase={ddPhase} setDdPhase={setDdPhase}
         revealed={revealed} setRevealed={setRevealed}
         teams={teams} onAward={awardPoints} onDeduct={deductPoints}
-        onClose={closeQuestion}
+        onClose={closeQuestion} multiChoice={multiChoice}
       />
     );
   }
@@ -511,7 +636,7 @@ export default function BibleJeopardy() {
 /* ══════════════════════════════════════════
    SETUP SCREEN
 ══════════════════════════════════════════ */
-function SetupScreen({ teams, setTeams, numTeams, setNumTeams, onStart }) {
+function SetupScreen({ teams, setTeams, numTeams, setNumTeams, multiChoice, setMultiChoice, onStart }) {
   return (
     <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Oswald', sans-serif" }}>
       <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 50% 0%, #0d1f6e 0%, #060b2e 70%)", zIndex:0 }} />
@@ -549,6 +674,21 @@ function SetupScreen({ teams, setTeams, numTeams, setNumTeams, onStart }) {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color:"#7ec8e3", fontSize:14, letterSpacing:4, marginBottom:14 }}>ANSWER FORMAT</div>
+            <div style={{ display:"flex", gap:12 }}>
+              {["OPEN ANSWER", "MULTIPLE CHOICE"].map((label, idx) => {
+                const active = multiChoice === (idx === 1);
+                return (
+                  <button key={idx} onClick={() => setMultiChoice(idx === 1)}
+                    style={{ flex:1, height:56, borderRadius:10, border: active ? "3px solid #ffd700" : "2px solid rgba(255,255,255,0.2)", background: active ? "rgba(255,215,0,0.15)" : "transparent", color: active ? "#ffd700" : "rgba(255,255,255,0.5)", fontSize:17, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:2, transition:"all 0.2s" }}>
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -628,11 +768,18 @@ function BoardScreen({ categories, teams, used, onSelect, onReset }) {
 /* ══════════════════════════════════════════
    QUESTION SCREEN
 ══════════════════════════════════════════ */
-function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose }) {
+function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose, multiChoice }) {
   const [ddTeamIdx, setDdTeamIdx]   = useState(null);
   const [ddWager, setDdWager]       = useState(null);
   const [wagerInput, setWagerInput] = useState("");
   const [wagerError, setWagerError] = useState("");
+
+  // Generate choices once on mount (stable for this question's lifetime)
+  const [choices] = useState(() => {
+    if (!multiChoice) return null;
+    const pool = DISTRACTOR_POOLS[selected.cat] || [];
+    return generateChoices(q.a, pool);
+  });
 
   useEffect(() => {
     if (isDailyDouble && ddPhase) sounds.dailyDouble();
@@ -738,19 +885,56 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
         </div>
       ) : (
         /* ── Question + controls ── */
-        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding:"40px 120px 32px", animation:"qSlide 0.35s ease" }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding: multiChoice ? "20px 80px 20px" : "40px 120px 32px", animation:"qSlide 0.35s ease" }}>
 
-          <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:`3px solid ${isDailyDouble ? "#ffd700" : "#1a3aab"}`, borderRadius:20, padding:"60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:32 }}>
-            <p style={{ fontSize:52, color:"white", textAlign:"center", lineHeight:1.45, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{q.q}</p>
+          {/* Question card */}
+          <div style={{ flex: multiChoice ? "0 0 auto" : 1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:`3px solid ${isDailyDouble ? "#ffd700" : "#1a3aab"}`, borderRadius:20, padding: multiChoice ? "28px 60px" : "60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:16 }}>
+            <p style={{ fontSize: multiChoice ? 38 : 52, color:"white", textAlign:"center", lineHeight:1.4, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{q.q}</p>
           </div>
 
-          {revealed && (
+          {/* Multiple-choice grid */}
+          {multiChoice && choices && (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, width:"100%", maxWidth:1400, marginBottom:16 }}>
+              {choices.map(choice => {
+                const correct = revealed && choice.correct;
+                const wrong   = revealed && !choice.correct;
+                return (
+                  <div key={choice.label} style={{
+                    background: correct ? "linear-gradient(160deg,rgba(255,215,0,0.22),rgba(255,215,0,0.08))"
+                              : wrong   ? "rgba(255,255,255,0.02)"
+                                        : "linear-gradient(160deg,#0e2191,#091660)",
+                    border: correct ? "2px solid #ffd700"
+                          : wrong   ? "2px solid rgba(255,255,255,0.07)"
+                                    : "2px solid #1a3aab",
+                    borderRadius:14, padding:"16px 24px",
+                    display:"flex", alignItems:"center", gap:18,
+                    transition:"border 0.3s, background 0.3s",
+                    boxShadow: correct ? "0 0 20px rgba(255,215,0,0.25)" : "none",
+                  }}>
+                    <span style={{ fontSize:30, fontWeight:700, flexShrink:0, minWidth:34,
+                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "#ffd700" }}>
+                      {choice.label}
+                    </span>
+                    <span style={{ fontSize:24, lineHeight:1.3,
+                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "white",
+                      fontWeight: correct ? 600 : 400 }}>
+                      {choice.text}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Standard answer box — open-answer mode only */}
+          {!multiChoice && revealed && (
             <div style={{ width:"100%", maxWidth:1400, background:"rgba(255,215,0,0.08)", border:"3px solid #ffd700", borderRadius:16, padding:"28px 60px", marginBottom:32, textAlign:"center", animation:"answerReveal 0.3s ease", transformOrigin:"top" }}>
               <div style={{ fontSize:13, color:"#ffd700", letterSpacing:5, marginBottom:10 }}>ANSWER</div>
               <div style={{ fontSize:42, color:"white", fontWeight:600, letterSpacing:1 }}>{q.a}</div>
             </div>
           )}
 
+          {/* Controls */}
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, width:"100%", maxWidth:1400 }}>
             {!revealed ? (
               <button onClick={() => { sounds.revealAnswer(); setRevealed(true); }} className="reveal-hover"
@@ -801,6 +985,193 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
               </>
             )}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
+   FINAL JEOPARDY SCREEN
+══════════════════════════════════════════ */
+function FinalJeopardyScreen({ question, teams, onComplete }) {
+  const [phase, setPhase]               = useState("category");
+  const [wagerInputs, setWagerInputs]   = useState(teams.map(() => ""));
+  const [wagerErrors, setWagerErrors]   = useState(teams.map(() => ""));
+  const [wagers, setWagers]             = useState(null);
+  const [judged, setJudged]             = useState(teams.map(() => null));
+  const [finalScores, setFinalScores]   = useState(teams.map(t => t.score));
+
+  useEffect(() => { sounds.finalReveal(); }, []);
+
+  const lockWagers = () => {
+    const errors = teams.map((t, i) => {
+      const w = parseInt(wagerInputs[i], 10);
+      if (isNaN(w) || w < 0) return "Minimum $0";
+      if (w > t.score)       return `Maximum ${dollar(t.score)}`;
+      return "";
+    });
+    if (errors.some(e => e)) { setWagerErrors(errors); return; }
+    setWagers(teams.map((_, i) => parseInt(wagerInputs[i], 10)));
+    setPhase("question");
+  };
+
+  const judgeTeam = (i, correct) => {
+    sounds[correct ? "correct" : "wrong"]();
+    const newJudged = [...judged];
+    newJudged[i] = correct;
+    setJudged(newJudged);
+    setFinalScores(prev => {
+      const next = [...prev];
+      next[i] = Math.max(0, prev[i] + (correct ? wagers[i] : -wagers[i]));
+      return next;
+    });
+  };
+
+  const allJudged = judged.every(j => j !== null);
+
+  const finish = () => {
+    const updatedTeams = teams.map((t, i) => ({ ...t, score: finalScores[i] }));
+    onComplete(updatedTeams);
+  };
+
+  return (
+    <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", fontFamily:"'Oswald',sans-serif", overflow:"hidden" }}>
+
+      {/* Header */}
+      <div style={{ height:80, background:"linear-gradient(180deg,#0a1245,#060b2e)", borderBottom:"3px solid #ffd70033", display:"flex", alignItems:"center", padding:"0 60px", flexShrink:0, gap:16 }}>
+        <span style={{ fontSize:28, fontWeight:700, color:"#ffd700", letterSpacing:6, textShadow:"0 0 20px rgba(255,215,0,0.4)" }}>FINAL JEOPARDY</span>
+        <div style={{ flex:1 }} />
+        {teams.map((t, i) => (
+          <div key={i} style={{ marginLeft:16, padding:"6px 22px", borderRadius:10, border:`2px solid ${TEAM_COLORS[i]}`, background:TEAM_BG[i], textAlign:"center" }}>
+            <div style={{ fontSize:11, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+            <div style={{ fontSize:26, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>
+              {judged[i] !== null ? dollar(finalScores[i]) : dollar(t.score)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Phase: category reveal ── */}
+      {phase === "category" && (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:20 }}>
+          <div style={{ fontSize:120, fontWeight:700, color:"#ffd700", letterSpacing:8, lineHeight:1, animation:"ddPulse 2s infinite", textAlign:"center" }}>FINAL</div>
+          <div style={{ fontSize:120, fontWeight:700, color:"#ffd700", letterSpacing:8, lineHeight:1, animation:"ddPulse 2s infinite 0.4s", textAlign:"center" }}>JEOPARDY</div>
+          <div style={{ width:700, height:3, background:"linear-gradient(90deg, transparent, #ffd700, transparent)", margin:"12px 0" }} />
+          <div style={{ fontSize:15, color:"rgba(255,255,255,0.4)", letterSpacing:6 }}>TONIGHT'S CATEGORY</div>
+          <div style={{ fontSize:60, fontWeight:700, color:"white", letterSpacing:3, textAlign:"center", textTransform:"uppercase", maxWidth:900, lineHeight:1.2 }}>
+            {question.category}
+          </div>
+          <button onClick={() => setPhase("wagering")} className="reveal-hover"
+            style={{ marginTop:28, padding:"22px 80px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:24, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.15s" }}>
+            BEGIN WAGERING
+          </button>
+        </div>
+      )}
+
+      {/* ── Phase: wager entry ── */}
+      {phase === "wagering" && (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:28, padding:"0 60px" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:15, color:"rgba(255,255,255,0.4)", letterSpacing:5 }}>CATEGORY</div>
+            <div style={{ fontSize:36, fontWeight:700, color:"white", letterSpacing:3, textTransform:"uppercase" }}>{question.category}</div>
+          </div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.3)", letterSpacing:4 }}>ENTER EACH TEAM'S WAGER — MIN $0, MAX = CURRENT SCORE</div>
+
+          <div style={{ display:"flex", gap:20, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
+            {teams.map((t, i) => (
+              <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, padding:"26px 30px", background:"rgba(255,255,255,0.04)", border:`2px solid ${wagerErrors[i] ? "#f43f5e" : TEAM_COLORS[i] + "55"}`, borderRadius:16, minWidth:210 }}>
+                <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:2 }}>Score: {dollar(t.score)}</div>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:22, color:"#ffd700", fontWeight:700 }}>$</span>
+                  <input
+                    type="number" min="0" max={t.score}
+                    value={wagerInputs[i]}
+                    onChange={e => {
+                      const u = [...wagerInputs]; u[i] = e.target.value; setWagerInputs(u);
+                      const ue = [...wagerErrors]; ue[i] = ""; setWagerErrors(ue);
+                    }}
+                    style={{ width:150, padding:"12px 14px", borderRadius:10, border:`2px solid ${wagerErrors[i] ? "#f43f5e" : TEAM_COLORS[i]}`, background:"rgba(255,255,255,0.07)", color:"white", fontSize:22, fontFamily:"'Oswald',sans-serif", outline:"none", textAlign:"center" }}
+                  />
+                </div>
+                {wagerErrors[i] && <div style={{ fontSize:12, color:"#f43f5e", letterSpacing:1 }}>{wagerErrors[i]}</div>}
+              </div>
+            ))}
+          </div>
+
+          <button onClick={lockWagers} className="reveal-hover"
+            style={{ padding:"20px 80px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:22, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+            LOCK IN WAGERS
+          </button>
+        </div>
+      )}
+
+      {/* ── Phase: question ── */}
+      {phase === "question" && (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding:"40px 120px 40px", animation:"qSlide 0.35s ease" }}>
+          <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:"3px solid #ffd700", borderRadius:20, padding:"60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:32 }}>
+            <p style={{ fontSize:52, color:"white", textAlign:"center", lineHeight:1.45, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{question.q}</p>
+          </div>
+          <button onClick={() => { sounds.revealAnswer(); setPhase("judging"); }} className="reveal-hover"
+            style={{ padding:"24px 120px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:26, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.15s" }}>
+            REVEAL ANSWER
+          </button>
+        </div>
+      )}
+
+      {/* ── Phase: judging ── */}
+      {phase === "judging" && (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:20, padding:"24px 60px 32px", overflowY:"auto" }}>
+
+          {/* Compact question reminder */}
+          <div style={{ width:"100%", maxWidth:1200, background:"rgba(10,18,69,0.9)", border:"1px solid #1a3aab", borderRadius:12, padding:"16px 40px" }}>
+            <p style={{ fontSize:20, color:"rgba(255,255,255,0.65)", textAlign:"center", margin:0, lineHeight:1.35, textTransform:"uppercase", letterSpacing:0.5 }}>{question.q}</p>
+          </div>
+
+          {/* Answer box */}
+          <div style={{ width:"100%", maxWidth:1200, background:"rgba(255,215,0,0.08)", border:"3px solid #ffd700", borderRadius:14, padding:"18px 40px", textAlign:"center", animation:"answerReveal 0.35s ease", transformOrigin:"top" }}>
+            <div style={{ fontSize:12, color:"#ffd700", letterSpacing:5, marginBottom:8 }}>CORRECT ANSWER</div>
+            <div style={{ fontSize:32, color:"white", fontWeight:600, letterSpacing:1 }}>{question.a}</div>
+          </div>
+
+          {/* Team judging cards */}
+          <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
+            {teams.map((t, i) => (
+              <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, padding:"22px 26px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:16, minWidth:210 }}>
+                <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", letterSpacing:2 }}>WAGERED {dollar(wagers[i])}</div>
+                {judged[i] === null ? (
+                  <div style={{ display:"flex", gap:10 }}>
+                    <button onClick={() => judgeTeam(i, true)} className="award-hover"
+                      style={{ padding:"12px 20px", background:"rgba(34,197,94,0.18)", border:"2px solid #22c55e", borderRadius:10, color:"#22c55e", fontSize:18, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:2, transition:"all 0.15s" }}>
+                      ✓ CORRECT
+                    </button>
+                    <button onClick={() => judgeTeam(i, false)} className="award-hover"
+                      style={{ padding:"12px 20px", background:"rgba(244,63,94,0.18)", border:"2px solid #f43f5e", borderRadius:10, color:"#f43f5e", fontSize:18, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:2, transition:"all 0.15s" }}>
+                      ✗ WRONG
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ textAlign:"center" }}>
+                    <div style={{ fontSize:16, color: judged[i] ? "#22c55e" : "#f43f5e", letterSpacing:3, marginBottom:6 }}>
+                      {judged[i] ? `+${dollar(wagers[i])}` : `-${dollar(wagers[i])}`}
+                    </div>
+                    <div style={{ fontSize:44, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>
+                      {dollar(finalScores[i])}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {allJudged && (
+            <button onClick={finish} className="reveal-hover"
+              style={{ padding:"20px 80px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:24, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.15s" }}>
+              SEE FINAL SCORES
+            </button>
+          )}
         </div>
       )}
     </div>
