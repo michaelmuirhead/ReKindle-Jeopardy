@@ -455,8 +455,9 @@ export default function BibleJeopardy() {
 
   const awardPoints = (teamIdx, pts) => {
     sounds.correct();
-    setTeams(teams.map((t, i) => i === teamIdx ? { ...t, score: t.score + pts } : t));
-    closeQuestion();
+    const updatedTeams = teams.map((t, i) => i === teamIdx ? { ...t, score: t.score + pts } : t);
+    setTeams(updatedTeams);
+    closeQuestion(updatedTeams);
   };
 
   const deductPoints = (teamIdx, pts) => {
@@ -464,14 +465,14 @@ export default function BibleJeopardy() {
     setTeams(teams.map((t, i) => i === teamIdx ? { ...t, score: Math.max(0, t.score - pts) } : t));
   };
 
-  const closeQuestion = () => {
+  const closeQuestion = (currentTeams = teams) => {
     const newUsed = { ...used, [selected.key]: true };
     setUsed(newUsed);
     setSelected(null); setRevealed(false); setDdPhase(false);
     setScreen("board");
     if (Object.keys(newUsed).length === gameCategories.length * POINT_VALUES.length) {
-      const max = Math.max(...teams.map(t => t.score));
-      setWinner(teams.filter(t => t.score === max));
+      const max = Math.max(...currentTeams.map(t => t.score));
+      setWinner(currentTeams.filter(t => t.score === max));
     }
   };
 
