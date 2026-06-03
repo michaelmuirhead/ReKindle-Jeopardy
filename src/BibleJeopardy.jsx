@@ -300,6 +300,48 @@ const QUESTION_BANK = {
       { q: "In Romans 11, Paul uses what agricultural image to explain how Gentiles have been included in God's family alongside Israel?", a: "An olive tree — Gentiles are wild branches grafted in (Romans 11:17-24)" },
     ],
   },
+  "Name That Verse": {
+    200: [
+      { q: "\"For God so loved the world that He gave His only begotten Son, that whoever believes in Him should not perish but have everlasting life.\"", a: "John 3:16" },
+      { q: "\"The Lord is my shepherd; I shall not want.\"", a: "Psalm 23:1" },
+      { q: "\"I can do all things through Christ who strengthens me.\"", a: "Philippians 4:13" },
+      { q: "\"Be still, and know that I am God.\"", a: "Psalm 46:10" },
+      { q: "\"Jesus wept.\"", a: "John 11:35" },
+      { q: "\"In the beginning, God created the heavens and the earth.\"", a: "Genesis 1:1" },
+    ],
+    400: [
+      { q: "\"Trust in the Lord with all your heart and lean not on your own understanding; in all your ways acknowledge Him, and He shall direct your paths.\"", a: "Proverbs 3:5-6" },
+      { q: "\"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you a hope and a future.\"", a: "Jeremiah 29:11" },
+      { q: "\"And we know that all things work together for good to those who love God, to those who are called according to His purpose.\"", a: "Romans 8:28" },
+      { q: "\"Love is patient, love is kind. It does not envy, it does not boast, it is not proud.\"", a: "1 Corinthians 13:4" },
+      { q: "\"Your word is a lamp to my feet and a light to my path.\"", a: "Psalm 119:105" },
+      { q: "\"Ask and it will be given to you; seek and you will find; knock and the door will be opened to you.\"", a: "Matthew 7:7" },
+    ],
+    600: [
+      { q: "\"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.\"", a: "Joshua 1:9" },
+      { q: "\"But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.\"", a: "Isaiah 40:31" },
+      { q: "\"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.\"", a: "Philippians 4:6" },
+      { q: "\"Come to me, all you who are weary and burdened, and I will give you rest.\"", a: "Matthew 11:28" },
+      { q: "\"Delight yourself in the Lord, and He will give you the desires of your heart.\"", a: "Psalm 37:4" },
+      { q: "\"This is the day the Lord has made; let us rejoice and be glad in it.\"", a: "Psalm 118:24" },
+    ],
+    800: [
+      { q: "\"For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.\"", a: "Romans 6:23" },
+      { q: "\"If my people, who are called by my name, will humble themselves and pray and seek my face and turn from their wicked ways, then I will hear from heaven and will heal their land.\"", a: "2 Chronicles 7:14" },
+      { q: "\"Submit yourselves therefore to God. Resist the devil, and he will flee from you.\"", a: "James 4:7" },
+      { q: "\"Do not conform to the pattern of this world, but be transformed by the renewing of your mind.\"", a: "Romans 12:2" },
+      { q: "\"Greater love has no one than this: to lay down one's life for one's friends.\"", a: "John 15:13" },
+      { q: "\"Cast all your anxiety on him because he cares for you.\"", a: "1 Peter 5:7" },
+    ],
+    1000: [
+      { q: "\"For it is by grace you have been saved, through faith — and this is not from yourselves, it is the gift of God — not by works, so that no one can boast.\"", a: "Ephesians 2:8-9" },
+      { q: "\"No weapon forged against you will prevail, and you will refute every tongue that accuses you. This is the heritage of the servants of the Lord.\"", a: "Isaiah 54:17" },
+      { q: "\"Now faith is confidence in what we hope for and assurance about what we do not see.\"", a: "Hebrews 11:1" },
+      { q: "\"The thief comes only to steal and kill and destroy; I have come that they may have life, and have it to the full.\"", a: "John 10:10" },
+      { q: "\"I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me.\"", a: "Galatians 2:20" },
+      { q: "\"Rejoice always, pray continually, give thanks in all circumstances; for this is God's will for you in Christ Jesus.\"", a: "1 Thessalonians 5:16-18" },
+    ],
+  },
 };
 
 const ALL_CATEGORIES = Object.keys(QUESTION_BANK);
@@ -587,9 +629,29 @@ function BoardScreen({ categories, teams, used, onSelect, onReset }) {
    QUESTION SCREEN
 ══════════════════════════════════════════ */
 function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose }) {
+  const [ddTeamIdx, setDdTeamIdx]   = useState(null);
+  const [ddWager, setDdWager]       = useState(null);
+  const [wagerInput, setWagerInput] = useState("");
+  const [wagerError, setWagerError] = useState("");
+
   useEffect(() => {
     if (isDailyDouble && ddPhase) sounds.dailyDouble();
   }, [isDailyDouble, ddPhase]);
+
+  const maxWager = ddTeamIdx !== null
+    ? Math.max(teams[ddTeamIdx].score, 1000)
+    : 1000;
+
+  const lockInWager = () => {
+    const w = parseInt(wagerInput, 10);
+    if (isNaN(w) || w < 5)           { setWagerError(`Minimum wager is $5`); return; }
+    if (w > maxWager)                 { setWagerError(`Maximum wager is ${dollar(maxWager)}`); return; }
+    setWagerError("");
+    setDdWager(w);
+  };
+
+  // Points used for award/deduct: wager on DD, face value otherwise
+  const effectivePts = isDailyDouble && ddWager !== null ? ddWager : selected.pts;
 
   return (
     <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", fontFamily:"'Oswald',sans-serif", overflow:"hidden" }}>
@@ -605,20 +667,81 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
       </div>
 
       {isDailyDouble && ddPhase ? (
-        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:40 }}>
-          <div style={{ fontSize:160, fontWeight:700, color:"#ffd700", letterSpacing:8, animation:"ddPulse 1.5s infinite", lineHeight:1 }}>DAILY</div>
-          <div style={{ fontSize:160, fontWeight:700, color:"#ffd700", letterSpacing:8, animation:"ddPulse 1.5s infinite 0.3s", lineHeight:1 }}>DOUBLE</div>
-          <div style={{ fontSize:22, color:"rgba(255,255,255,0.5)", letterSpacing:4, marginTop:20 }}>⭐ BONUS QUESTION ⭐</div>
-          <button onClick={() => setDdPhase(false)} className="reveal-hover"
-            style={{ marginTop:20, padding:"24px 80px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:28, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 30px rgba(255,215,0,0.5)", transition:"all 0.15s" }}>
-            REVEAL QUESTION
-          </button>
+        /* ── Daily Double card with wagering sub-phases ── */
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:24, padding:"0 80px" }}>
+
+          {/* Big pulsing title */}
+          <div style={{ fontSize:130, fontWeight:700, color:"#ffd700", letterSpacing:8, animation:"ddPulse 1.5s infinite", lineHeight:1 }}>DAILY</div>
+          <div style={{ fontSize:130, fontWeight:700, color:"#ffd700", letterSpacing:8, animation:"ddPulse 1.5s infinite 0.3s", lineHeight:1, marginBottom:8 }}>DOUBLE</div>
+
+          {/* Sub-phase 1: pick which team found it */}
+          {ddTeamIdx === null && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:20 }}>
+              <div style={{ fontSize:18, color:"rgba(255,255,255,0.55)", letterSpacing:5 }}>WHICH TEAM FOUND IT?</div>
+              <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
+                {teams.map((t, i) => (
+                  <button key={i} onClick={() => setDdTeamIdx(i)} className="award-hover"
+                    style={{ padding:"18px 40px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:12, color:TEAM_COLORS[i], fontSize:22, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:180 }}>
+                    {t.name}
+                    <span style={{ display:"block", fontSize:13, color:"rgba(255,255,255,0.45)", fontWeight:400, letterSpacing:2 }}>{dollar(t.score)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sub-phase 2: enter wager */}
+          {ddTeamIdx !== null && ddWager === null && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
+              <div style={{ fontSize:18, color:TEAM_COLORS[ddTeamIdx], letterSpacing:5 }}>
+                {teams[ddTeamIdx].name.toUpperCase()} — ENTER YOUR WAGER
+              </div>
+              <div style={{ fontSize:14, color:"rgba(255,255,255,0.35)", letterSpacing:3 }}>
+                CURRENT SCORE: {dollar(teams[ddTeamIdx].score)} &nbsp;|&nbsp; MAX WAGER: {dollar(maxWager)}
+              </div>
+              <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                <span style={{ fontSize:32, color:"#ffd700", fontWeight:700 }}>$</span>
+                <input
+                  autoFocus
+                  type="number" min="5" max={maxWager}
+                  value={wagerInput}
+                  onChange={e => { setWagerInput(e.target.value); setWagerError(""); }}
+                  onKeyDown={e => e.key === "Enter" && lockInWager()}
+                  style={{ width:220, padding:"16px 20px", borderRadius:10, border:`2px solid ${TEAM_COLORS[ddTeamIdx]}`, background:"rgba(255,255,255,0.07)", color:"white", fontSize:32, fontFamily:"'Oswald',sans-serif", outline:"none", textAlign:"center", fontVariantNumeric:"tabular-nums" }}
+                />
+              </div>
+              {wagerError && (
+                <div style={{ fontSize:14, color:"#f43f5e", letterSpacing:2 }}>{wagerError}</div>
+              )}
+              <button onClick={lockInWager} className="reveal-hover"
+                style={{ marginTop:4, padding:"18px 60px", background:`linear-gradient(180deg,${TEAM_COLORS[ddTeamIdx]},${TEAM_COLORS[ddTeamIdx]}aa)`, color:"#060b2e", border:"none", borderRadius:12, fontSize:22, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                LOCK IN WAGER
+              </button>
+            </div>
+          )}
+
+          {/* Sub-phase 3: wager locked — ready to reveal */}
+          {ddWager !== null && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:20 }}>
+              <div style={{ fontSize:18, color:"rgba(255,255,255,0.55)", letterSpacing:4 }}>
+                {teams[ddTeamIdx].name.toUpperCase()} IS WAGERING
+              </div>
+              <div style={{ fontSize:72, fontWeight:700, color:"#ffd700", textShadow:"0 0 30px rgba(255,215,0,0.5)" }}>
+                {dollar(ddWager)}
+              </div>
+              <button onClick={() => setDdPhase(false)} className="reveal-hover"
+                style={{ marginTop:8, padding:"22px 80px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:26, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 30px rgba(255,215,0,0.5)", transition:"all 0.15s" }}>
+                REVEAL QUESTION
+              </button>
+            </div>
+          )}
         </div>
       ) : (
+        /* ── Question + controls ── */
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding:"40px 120px 32px", animation:"qSlide 0.35s ease" }}>
 
           <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:`3px solid ${isDailyDouble ? "#ffd700" : "#1a3aab"}`, borderRadius:20, padding:"60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:32 }}>
-            <p style={{ fontSize:52, color:"white", textAlign:"center", lineHeight:1.45, margin:0, fontWeight:400, letterSpacing:1 }}>{q.q}</p>
+            <p style={{ fontSize:52, color:"white", textAlign:"center", lineHeight:1.45, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{q.q}</p>
           </div>
 
           {revealed && (
@@ -636,25 +759,45 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
               </button>
             ) : (
               <>
-                <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>AWARD POINTS TO</div>
-                <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
-                  {teams.map((t,i) => (
-                    <button key={i} onClick={() => onAward(i, selected.pts)} className="award-hover"
-                      style={{ padding:"20px 44px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:12, color:TEAM_COLORS[i], fontSize:22, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:200 }}>
-                      {t.name}
-                      <span style={{ display:"block", fontSize:14, color:"rgba(255,255,255,0.5)", fontWeight:400, letterSpacing:2 }}>{dollar(t.score)}</span>
+                {isDailyDouble ? (
+                  /* DD: only the wagering team gets award/deduct */
+                  <>
+                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>
+                      AWARD {dollar(effectivePts)} TO
+                    </div>
+                    <button onClick={() => onAward(ddTeamIdx, effectivePts)} className="award-hover"
+                      style={{ padding:"20px 60px", background:TEAM_BG[ddTeamIdx], border:`2px solid ${TEAM_COLORS[ddTeamIdx]}`, borderRadius:12, color:TEAM_COLORS[ddTeamIdx], fontSize:26, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:280 }}>
+                      {teams[ddTeamIdx].name}
+                      <span style={{ display:"block", fontSize:14, color:"rgba(255,255,255,0.5)", fontWeight:400, letterSpacing:2 }}>{dollar(teams[ddTeamIdx].score)}</span>
                     </button>
-                  ))}
-                </div>
-
-                <div style={{ display:"flex", gap:24, marginTop:4 }}>
-                  {teams.map((t,i) => (
-                    <span key={i} onClick={() => onDeduct(i, selected.pts)}
-                      style={{ fontSize:14, color:TEAM_COLORS[i], opacity:0.6, cursor:"pointer", letterSpacing:2, textDecoration:"underline" }}>
-                      -{dollar(selected.pts)} {t.name}
+                    <span onClick={() => onDeduct(ddTeamIdx, effectivePts)}
+                      style={{ fontSize:14, color:TEAM_COLORS[ddTeamIdx], opacity:0.6, cursor:"pointer", letterSpacing:2, textDecoration:"underline", marginTop:4 }}>
+                      -{dollar(effectivePts)} {teams[ddTeamIdx].name} (wrong answer)
                     </span>
-                  ))}
-                </div>
+                  </>
+                ) : (
+                  /* Normal: all teams */
+                  <>
+                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>AWARD POINTS TO</div>
+                    <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
+                      {teams.map((t,i) => (
+                        <button key={i} onClick={() => onAward(i, effectivePts)} className="award-hover"
+                          style={{ padding:"20px 44px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:12, color:TEAM_COLORS[i], fontSize:22, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:200 }}>
+                          {t.name}
+                          <span style={{ display:"block", fontSize:14, color:"rgba(255,255,255,0.5)", fontWeight:400, letterSpacing:2 }}>{dollar(t.score)}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display:"flex", gap:24, marginTop:4 }}>
+                      {teams.map((t,i) => (
+                        <span key={i} onClick={() => onDeduct(i, effectivePts)}
+                          style={{ fontSize:14, color:TEAM_COLORS[i], opacity:0.6, cursor:"pointer", letterSpacing:2, textDecoration:"underline" }}>
+                          -{dollar(effectivePts)} {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
