@@ -363,6 +363,80 @@ const POINT_VALUES = [200, 400, 600, 800, 1000];
 const TEAM_COLORS = ["#06b6d4", "#f43f5e", "#a3e635", "#f97316"];
 const TEAM_BG = ["rgba(6,182,212,0.18)", "rgba(244,63,94,0.18)", "rgba(163,230,53,0.18)", "rgba(249,115,22,0.18)"];
 
+/* ── Distractor pools (one per category) ── */
+const DISTRACTOR_POOLS = {
+  "Characters": [
+    "Moses","Abraham","David","Solomon","Elijah","Jonah","Joseph","Samson",
+    "Daniel","Noah","Isaiah","Nehemiah","Jacob","Paul","Peter","Joshua",
+    "Gideon","Caleb","King Saul","Ezekiel","John the Baptist","Jeremiah",
+  ],
+  "Life of Jesus": [
+    "Bethlehem","Nazareth","Jerusalem","Jericho","Capernaum",
+    "40 days","3 days","7 days","12 years","30 years",
+    "Peter","James","John","Andrew","Mary","Galilee","Matthew","Luke",
+  ],
+  "Miracles": [
+    "5 loaves and 2 fish","Lazarus","The Red Sea","Naaman","Jericho",
+    "Manna","Peter","Elijah","Elisha","The Jordan River",
+    "Uzzah","Moses","Cana","Bethesda","The Sea of Galilee",
+  ],
+  "Women of the Bible": [
+    "Ruth","Rahab","Mary","Mary Magdalene","Miriam","Sarah",
+    "Esther","Deborah","Delilah","Lydia","Priscilla","Anna",
+    "Naomi","Bathsheba","Hannah","Abigail","Elizabeth","Leah","Rachel",
+  ],
+  "Numbers & Facts": [
+    "3","7","10","12","30","40","50","66","120","150",
+    "3 days","7 days","40 days","40 years","3 years",
+    "500 people","969 years","153 fish","144,000","12 tribes",
+  ],
+  "The Early Church": [
+    "Jerusalem","Antioch","Corinth","Ephesus","Rome","Philippi",
+    "Peter","Paul","Barnabas","Stephen","Philip","Ananias",
+    "Cornelius","Rhoda","Silas","Timothy","Apollos","Malta","Pentecost",
+  ],
+  "Prophets": [
+    "Elijah","Elisha","Isaiah","Jeremiah","Ezekiel","Daniel",
+    "Hosea","Micah","Jonah","Amos","Zechariah","Malachi",
+    "Nahum","Habakkuk","Joel","Obadiah","Haggai","Zephaniah",
+  ],
+  "Psalms & Proverbs": [
+    "Psalm 1","Psalm 22","Psalm 23","Psalm 27","Psalm 46","Psalm 51",
+    "Psalm 91","Psalm 100","Psalm 119","Psalm 139",
+    "Proverbs 3:5-6","Proverbs 4:23","Proverbs 16:18","Proverbs 22:6","Proverbs 31",
+    "Solomon","David","Asaph","176 verses","73 Psalms",
+  ],
+  "Creation & Genesis": [
+    "Adam","Eve","Noah","Abraham","Isaac","Jacob","Joseph",
+    "Cain","Abel","Lot","Haran","Canaan",
+    "Garden of Eden","Mount Ararat","Day 1","Day 3","Day 6",
+    "Rainbow","50 chapters","Sodom","Gomorrah",
+  ],
+  "Kings & Kingdoms": [
+    "King Saul","David","Solomon","Rehoboam","Ahab","Jehoshaphat",
+    "Hezekiah","Josiah","Manasseh","Nebuchadnezzar","Asa",
+    "Israel","Judah","Babylon","Assyria","Nathan","Elijah",
+    "Three kings","Sixty years","Forty years",
+  ],
+  "Paul's Letters": [
+    "Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians",
+    "Philippians","Colossians","1 Thessalonians","1 Timothy","2 Timothy",
+    "Titus","Philemon","Hebrews",
+    "Corinth","Ephesus","Rome","Antioch","Thessalonica",
+    "Habakkuk","Isaiah","Abraham","Moses",
+  ],
+  "Name That Verse": [
+    "John 3:16","Psalm 23:1","Romans 8:28","Jeremiah 29:11",
+    "Philippians 4:13","Proverbs 3:5-6","Isaiah 40:31","Matthew 7:7",
+    "Hebrews 11:1","Galatians 2:20","Romans 6:23","Joshua 1:9",
+    "1 Peter 5:7","Romans 12:2","James 4:7","Ephesians 2:8-9",
+    "Psalm 46:10","Genesis 1:1","John 11:35","1 Corinthians 13:4",
+    "Psalm 119:105","Matthew 11:28","Psalm 37:4","Psalm 118:24",
+    "2 Chronicles 7:14","John 15:13","John 10:10","1 Thessalonians 5:16-18",
+    "Isaiah 54:17","John 14:6","Acts 2:38","Matthew 5:8",
+  ],
+};
+
 /* ── Helpers ── */
 function dollar(n) { return `$${n}`; }
 
@@ -373,6 +447,23 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function generateChoices(correctAnswer, pool) {
+  const ca = correctAnswer.toLowerCase().trim();
+  // Exclude exact matches and items that start with the same word
+  let candidates = pool.filter(item => {
+    const p = item.toLowerCase().trim();
+    return p !== ca && !p.startsWith(ca + " ") && !ca.startsWith(p + " ");
+  });
+  if (candidates.length < 3) {
+    candidates = pool.filter(item => item.toLowerCase().trim() !== ca);
+  }
+  return shuffle([correctAnswer, ...shuffle(candidates).slice(0, 3)]).map((text, i) => ({
+    label: ["A", "B", "C", "D"][i],
+    text,
+    correct: text === correctAnswer,
+  }));
 }
 
 /* ── CSS injected once ── */
@@ -435,6 +526,7 @@ export default function BibleJeopardy() {
   const [gameQuestions, setGameQuestions]     = useState({});
   const [showFinalJeopardy, setShowFinalJeopardy] = useState(false);
   const [fjQuestion, setFjQuestion]           = useState(null);
+  const [multiChoice, setMultiChoice]         = useState(false);
 
   const buildGame = () => {
     const cats = shuffle(ALL_CATEGORIES).slice(0, 6);
@@ -504,7 +596,7 @@ export default function BibleJeopardy() {
   const isDailyDouble = selected && selected.key === dailyDouble;
 
   /* ── SETUP ── */
-  if (screen === "setup") return <SetupScreen teams={teams} setTeams={setTeams} numTeams={numTeams} setNumTeams={setNumTeams} onStart={startGame} />;
+  if (screen === "setup") return <SetupScreen teams={teams} setTeams={setTeams} numTeams={numTeams} setNumTeams={setNumTeams} multiChoice={multiChoice} setMultiChoice={setMultiChoice} onStart={startGame} />;
 
   /* ── WINNER ── */
   if (winner) return <WinnerScreen winner={winner} teams={teams} onReset={resetGame} />;
@@ -532,7 +624,7 @@ export default function BibleJeopardy() {
         ddPhase={ddPhase} setDdPhase={setDdPhase}
         revealed={revealed} setRevealed={setRevealed}
         teams={teams} onAward={awardPoints} onDeduct={deductPoints}
-        onClose={closeQuestion}
+        onClose={closeQuestion} multiChoice={multiChoice}
       />
     );
   }
@@ -544,7 +636,7 @@ export default function BibleJeopardy() {
 /* ══════════════════════════════════════════
    SETUP SCREEN
 ══════════════════════════════════════════ */
-function SetupScreen({ teams, setTeams, numTeams, setNumTeams, onStart }) {
+function SetupScreen({ teams, setTeams, numTeams, setNumTeams, multiChoice, setMultiChoice, onStart }) {
   return (
     <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Oswald', sans-serif" }}>
       <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 50% 0%, #0d1f6e 0%, #060b2e 70%)", zIndex:0 }} />
@@ -582,6 +674,21 @@ function SetupScreen({ teams, setTeams, numTeams, setNumTeams, onStart }) {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ color:"#7ec8e3", fontSize:14, letterSpacing:4, marginBottom:14 }}>ANSWER FORMAT</div>
+            <div style={{ display:"flex", gap:12 }}>
+              {["OPEN ANSWER", "MULTIPLE CHOICE"].map((label, idx) => {
+                const active = multiChoice === (idx === 1);
+                return (
+                  <button key={idx} onClick={() => setMultiChoice(idx === 1)}
+                    style={{ flex:1, height:56, borderRadius:10, border: active ? "3px solid #ffd700" : "2px solid rgba(255,255,255,0.2)", background: active ? "rgba(255,215,0,0.15)" : "transparent", color: active ? "#ffd700" : "rgba(255,255,255,0.5)", fontSize:17, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:2, transition:"all 0.2s" }}>
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -661,11 +768,18 @@ function BoardScreen({ categories, teams, used, onSelect, onReset }) {
 /* ══════════════════════════════════════════
    QUESTION SCREEN
 ══════════════════════════════════════════ */
-function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose }) {
+function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onClose, multiChoice }) {
   const [ddTeamIdx, setDdTeamIdx]   = useState(null);
   const [ddWager, setDdWager]       = useState(null);
   const [wagerInput, setWagerInput] = useState("");
   const [wagerError, setWagerError] = useState("");
+
+  // Generate choices once on mount (stable for this question's lifetime)
+  const [choices] = useState(() => {
+    if (!multiChoice) return null;
+    const pool = DISTRACTOR_POOLS[selected.cat] || [];
+    return generateChoices(q.a, pool);
+  });
 
   useEffect(() => {
     if (isDailyDouble && ddPhase) sounds.dailyDouble();
@@ -771,19 +885,56 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
         </div>
       ) : (
         /* ── Question + controls ── */
-        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding:"40px 120px 32px", animation:"qSlide 0.35s ease" }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"space-between", padding: multiChoice ? "20px 80px 20px" : "40px 120px 32px", animation:"qSlide 0.35s ease" }}>
 
-          <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:`3px solid ${isDailyDouble ? "#ffd700" : "#1a3aab"}`, borderRadius:20, padding:"60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:32 }}>
-            <p style={{ fontSize:52, color:"white", textAlign:"center", lineHeight:1.45, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{q.q}</p>
+          {/* Question card */}
+          <div style={{ flex: multiChoice ? "0 0 auto" : 1, display:"flex", alignItems:"center", justifyContent:"center", width:"100%", maxWidth:1400, background:"linear-gradient(160deg,#0c1e8a,#070e52)", border:`3px solid ${isDailyDouble ? "#ffd700" : "#1a3aab"}`, borderRadius:20, padding: multiChoice ? "28px 60px" : "60px 100px", boxShadow:"0 0 60px rgba(0,60,200,0.3)", marginBottom:16 }}>
+            <p style={{ fontSize: multiChoice ? 38 : 52, color:"white", textAlign:"center", lineHeight:1.4, margin:0, fontWeight:400, letterSpacing:1, textTransform:"uppercase" }}>{q.q}</p>
           </div>
 
-          {revealed && (
+          {/* Multiple-choice grid */}
+          {multiChoice && choices && (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, width:"100%", maxWidth:1400, marginBottom:16 }}>
+              {choices.map(choice => {
+                const correct = revealed && choice.correct;
+                const wrong   = revealed && !choice.correct;
+                return (
+                  <div key={choice.label} style={{
+                    background: correct ? "linear-gradient(160deg,rgba(255,215,0,0.22),rgba(255,215,0,0.08))"
+                              : wrong   ? "rgba(255,255,255,0.02)"
+                                        : "linear-gradient(160deg,#0e2191,#091660)",
+                    border: correct ? "2px solid #ffd700"
+                          : wrong   ? "2px solid rgba(255,255,255,0.07)"
+                                    : "2px solid #1a3aab",
+                    borderRadius:14, padding:"16px 24px",
+                    display:"flex", alignItems:"center", gap:18,
+                    transition:"border 0.3s, background 0.3s",
+                    boxShadow: correct ? "0 0 20px rgba(255,215,0,0.25)" : "none",
+                  }}>
+                    <span style={{ fontSize:30, fontWeight:700, flexShrink:0, minWidth:34,
+                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "#ffd700" }}>
+                      {choice.label}
+                    </span>
+                    <span style={{ fontSize:24, lineHeight:1.3,
+                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "white",
+                      fontWeight: correct ? 600 : 400 }}>
+                      {choice.text}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Standard answer box — open-answer mode only */}
+          {!multiChoice && revealed && (
             <div style={{ width:"100%", maxWidth:1400, background:"rgba(255,215,0,0.08)", border:"3px solid #ffd700", borderRadius:16, padding:"28px 60px", marginBottom:32, textAlign:"center", animation:"answerReveal 0.3s ease", transformOrigin:"top" }}>
               <div style={{ fontSize:13, color:"#ffd700", letterSpacing:5, marginBottom:10 }}>ANSWER</div>
               <div style={{ fontSize:42, color:"white", fontWeight:600, letterSpacing:1 }}>{q.a}</div>
             </div>
           )}
 
+          {/* Controls */}
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, width:"100%", maxWidth:1400 }}>
             {!revealed ? (
               <button onClick={() => { sounds.revealAnswer(); setRevealed(true); }} className="reveal-hover"
