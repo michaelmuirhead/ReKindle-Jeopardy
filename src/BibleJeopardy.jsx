@@ -1280,9 +1280,7 @@ export default function BibleJeopardy() {
         q={q} selected={selected} isDailyDouble={isDailyDouble}
         ddPhase={ddPhase} setDdPhase={setDdPhase}
         revealed={revealed} setRevealed={setRevealed}
-        teams={teams} onAward={awardPoints} onDeduct={deductPoints}
-        onAwardOnly={awardPointsOnly}
-        onClose={closeQuestion} multiChoice={multiChoice}
+        teams={teams} onClose={closeQuestion} multiChoice={multiChoice}
       />
     );
   }
@@ -1486,12 +1484,13 @@ function BoardScreen({ categories, teams, used, onSelect, onReset }) {
 /* ══════════════════════════════════════════
    QUESTION SCREEN
 ══════════════════════════════════════════ */
-function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onAward, onDeduct, onAwardOnly, onClose, multiChoice }) {
-  const [ddTeamIdx, setDdTeamIdx]   = useState(null);
-  const [ddWager, setDdWager]       = useState(null);
-  const [wagerInput, setWagerInput] = useState("");
-  const [wagerError, setWagerError] = useState("");
-  const [mcJudged, setMcJudged]     = useState({});
+function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revealed, setRevealed, teams, onClose, multiChoice }) {
+  const [ddTeamIdx, setDdTeamIdx]     = useState(null);
+  const [ddWager, setDdWager]         = useState(null);
+  const [wagerInput, setWagerInput]   = useState("");
+  const [wagerError, setWagerError]   = useState("");
+  // null = no change (pass), "award" = correct, "deduct" = wrong
+  const [teamDecision, setTeamDecision] = useState(() => teams.map(() => null));
 
   // Generate choices once on mount (stable for this question's lifetime)
   const [choices] = useState(() => {
@@ -1518,6 +1517,20 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
 
   // Points used for award/deduct: wager on DD, face value otherwise
   const effectivePts = isDailyDouble && ddWager !== null ? ddWager : selected.pts;
+
+  const handleDone = () => {
+    const newTeams = teams.map((t, i) => {
+      if (teamDecision[i] === "award")  return { ...t, score: t.score + effectivePts };
+      if (teamDecision[i] === "deduct") return { ...t, score: Math.max(0, t.score - effectivePts) };
+      return t;
+    });
+    if (teamDecision.some(d => d === "award"))       sounds.correct();
+    else if (teamDecision.some(d => d === "deduct")) sounds.wrong();
+    onClose(newTeams);
+  };
+
+  const toggleDecision = (i, val) =>
+    setTeamDecision(prev => { const n = [...prev]; n[i] = n[i] === val ? null : val; return n; });
 
   return (
     <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", fontFamily:"'Oswald',sans-serif", overflow:"hidden" }}>
@@ -1662,87 +1675,36 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
               </button>
             ) : (
               <>
-                {isDailyDouble ? (
-                  /* DD: only the wagering team gets award/deduct */
-                  <>
-                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>
-                      AWARD {dollar(effectivePts)} TO
-                    </div>
-                    <button onClick={() => onAward(ddTeamIdx, effectivePts)} className="award-hover"
-                      style={{ padding:"20px 60px", background:TEAM_BG[ddTeamIdx], border:`2px solid ${TEAM_COLORS[ddTeamIdx]}`, borderRadius:12, color:TEAM_COLORS[ddTeamIdx], fontSize:26, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:280 }}>
-                      {teams[ddTeamIdx].name}
-                      <span style={{ display:"block", fontSize:14, color:"rgba(255,255,255,0.5)", fontWeight:400, letterSpacing:2 }}>{dollar(teams[ddTeamIdx].score)}</span>
-                    </button>
-                    <span onClick={() => onDeduct(ddTeamIdx, effectivePts)}
-                      style={{ fontSize:14, color:TEAM_COLORS[ddTeamIdx], opacity:0.6, cursor:"pointer", letterSpacing:2, textDecoration:"underline", marginTop:4 }}>
-                      -{dollar(effectivePts)} {teams[ddTeamIdx].name} (wrong answer)
-                    </span>
-                  </>
-                ) : multiChoice ? (
-                  /* MC mode: per-team judging cards + DONE button */
-                  <>
-                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>JUDGE EACH TEAM</div>
-                    <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
-                      {teams.map((t, i) => {
-                        const judgedResult = mcJudged[i];
-                        const isJudged = judgedResult !== undefined;
-                        return (
-                          <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 22px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:14, minWidth:190, flex:1, maxWidth:260 }}>
-                            <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
-                            <div style={{ fontSize:24, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>{dollar(t.score)}</div>
-                            {!isJudged ? (
-                              <div style={{ display:"flex", gap:8 }}>
-                                <button onClick={() => { onAwardOnly(i, effectivePts); setMcJudged(prev => ({ ...prev, [i]: true })); }} className="award-hover"
-                                  style={{ padding:"10px 14px", background:"rgba(34,197,94,0.18)", border:"2px solid #22c55e", borderRadius:10, color:"#22c55e", fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s" }}>
-                                  ✓ CORRECT
-                                </button>
-                                <button onClick={() => { onDeduct(i, effectivePts); setMcJudged(prev => ({ ...prev, [i]: false })); }} className="award-hover"
-                                  style={{ padding:"10px 14px", background:"rgba(244,63,94,0.18)", border:"2px solid #f43f5e", borderRadius:10, color:"#f43f5e", fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s" }}>
-                                  ✗ WRONG
-                                </button>
-                              </div>
-                            ) : (
-                              <div style={{ textAlign:"center" }}>
-                                <div style={{ fontSize:20, fontWeight:700, color: judgedResult ? "#22c55e" : "#f43f5e", letterSpacing:2 }}>
-                                  {judgedResult ? `+${dollar(effectivePts)}` : `-${dollar(effectivePts)}`}
-                                </div>
-                                <div style={{ fontSize:12, color:"rgba(255,255,255,0.35)", letterSpacing:3, marginTop:2 }}>
-                                  {judgedResult ? "CORRECT" : "WRONG"}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <button onClick={onClose} className="reveal-hover"
-                      style={{ marginTop:6, padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
-                      DONE — BACK TO BOARD
-                    </button>
-                  </>
-                ) : (
-                  /* Open-answer mode: award one team and auto-close */
-                  <>
-                    <div style={{ fontSize:14, color:"rgba(255,255,255,0.4)", letterSpacing:4, marginBottom:4 }}>AWARD POINTS TO</div>
-                    <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
-                      {teams.map((t,i) => (
-                        <button key={i} onClick={() => onAward(i, effectivePts)} className="award-hover"
-                          style={{ padding:"20px 44px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:12, color:TEAM_COLORS[i], fontSize:22, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:200 }}>
-                          {t.name}
-                          <span style={{ display:"block", fontSize:14, color:"rgba(255,255,255,0.5)", fontWeight:400, letterSpacing:2 }}>{dollar(t.score)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ display:"flex", gap:24, marginTop:4 }}>
-                      {teams.map((t,i) => (
-                        <span key={i} onClick={() => onDeduct(i, effectivePts)}
-                          style={{ fontSize:14, color:TEAM_COLORS[i], opacity:0.6, cursor:"pointer", letterSpacing:2, textDecoration:"underline" }}>
-                          -{dollar(effectivePts)} {t.name}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:4 }}>SCORE THIS QUESTION</div>
+                <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
+                  {(isDailyDouble ? [{ team: teams[ddTeamIdx], idx: ddTeamIdx }] : teams.map((team, idx) => ({ team, idx }))).map(({ team: t, idx: i }) => {
+                    const dec = teamDecision[i];
+                    return (
+                      <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 20px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:14, minWidth:200, flex:1, maxWidth:300 }}>
+                        <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+                        <div style={{ fontSize:22, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>{dollar(t.score)}</div>
+                        <div style={{ display:"flex", gap:7 }}>
+                          <button onClick={() => toggleDecision(i, "award")}
+                            style={{ padding:"10px 12px", background: dec==="award" ? "rgba(34,197,94,0.32)" : "rgba(34,197,94,0.07)", border: dec==="award" ? "2px solid #22c55e" : "2px solid rgba(34,197,94,0.22)", borderRadius:10, color: dec==="award" ? "#22c55e" : "rgba(34,197,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                            +{dollar(effectivePts)}<br/><span style={{fontSize:10}}>CORRECT</span>
+                          </button>
+                          <button onClick={() => setTeamDecision(prev => { const n=[...prev]; n[i]=null; return n; })}
+                            style={{ padding:"10px 12px", background: dec===null ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)", border: dec===null ? "2px solid rgba(255,255,255,0.35)" : "2px solid rgba(255,255,255,0.08)", borderRadius:10, color: dec===null ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.22)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                            NO<br/><span style={{fontSize:10}}>CHANGE</span>
+                          </button>
+                          <button onClick={() => toggleDecision(i, "deduct")}
+                            style={{ padding:"10px 12px", background: dec==="deduct" ? "rgba(244,63,94,0.32)" : "rgba(244,63,94,0.07)", border: dec==="deduct" ? "2px solid #f43f5e" : "2px solid rgba(244,63,94,0.22)", borderRadius:10, color: dec==="deduct" ? "#f43f5e" : "rgba(244,63,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                            -{dollar(effectivePts)}<br/><span style={{fontSize:10}}>WRONG</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button onClick={handleDone} className="reveal-hover"
+                  style={{ marginTop:6, padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                  DONE — BACK TO BOARD
+                </button>
               </>
             )}
           </div>
