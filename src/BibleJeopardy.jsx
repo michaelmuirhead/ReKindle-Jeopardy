@@ -1532,6 +1532,40 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
   const toggleDecision = (i, val) =>
     setTeamDecision(prev => { const n = [...prev]; n[i] = n[i] === val ? null : val; return n; });
 
+  // ── MC buzz-in state (non-DD multiple-choice only) ──
+  const [mcPhase, setMcPhase]               = useState("pick-team"); // "pick-team"|"answering"|"correct"|"closed"
+  const [mcActiveTeam, setMcActiveTeam]     = useState(null);
+  const [mcEliminated, setMcEliminated]     = useState([]);          // [{choiceIdx, teamIdx}]
+  const [mcScoreDeltas, setMcScoreDeltas]   = useState(() => teams.map(() => 0));
+  const [mcAnswerRevealed, setMcAnswerRevealed] = useState(false);
+
+  const handleMcChoiceTap = (choiceIdx) => {
+    if (mcPhase !== "answering") return;
+    if (mcEliminated.some(e => e.choiceIdx === choiceIdx)) return;
+    if (choices[choiceIdx].correct) {
+      sounds.correct();
+      setMcScoreDeltas(prev => { const n=[...prev]; n[mcActiveTeam] += selected.pts; return n; });
+      setMcPhase("correct");
+      setMcAnswerRevealed(true);
+    } else {
+      sounds.wrong();
+      const newElim = [...mcEliminated, { choiceIdx, teamIdx: mcActiveTeam }];
+      setMcEliminated(newElim);
+      setMcScoreDeltas(prev => { const n=[...prev]; n[mcActiveTeam] -= selected.pts; return n; });
+      const correctIdx = choices.findIndex(c => c.correct);
+      const allNonCorrectGone = choices.every((_, i) => i === correctIdx || newElim.some(e => e.choiceIdx === i));
+      if (allNonCorrectGone) { setMcPhase("closed"); setMcAnswerRevealed(true); }
+      else { setMcActiveTeam(null); setMcPhase("pick-team"); }
+    }
+  };
+
+  const handleMcClose = () => { setMcPhase("closed"); setMcAnswerRevealed(true); };
+
+  const handleMcDone = () => {
+    const newTeams = teams.map((t, i) => ({ ...t, score: Math.max(0, t.score + mcScoreDeltas[i]) }));
+    onClose(newTeams);
+  };
+
   return (
     <div style={{ width:"100vw", height:"100vh", background:"#060b2e", display:"flex", flexDirection:"column", fontFamily:"'Oswald',sans-serif", overflow:"hidden" }}>
 
@@ -1627,31 +1661,48 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
           {/* Multiple-choice grid */}
           {multiChoice && choices && (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, width:"100%", maxWidth:1400, marginBottom:16 }}>
-              {choices.map(choice => {
-                const correct = revealed && choice.correct;
-                const wrong   = revealed && !choice.correct;
+              {choices.map((choice, idx) => {
+                const elimEntry      = isDailyDouble ? null : mcEliminated.find(e => e.choiceIdx === idx);
+                const isElim         = !!elimEntry;
+                const isRevealedCorrect = isDailyDouble ? (revealed && choice.correct) : (mcAnswerRevealed && choice.correct);
+                const isRevealedWrong   = isDailyDouble ? (revealed && !choice.correct) : (mcAnswerRevealed && !choice.correct && !isElim);
+                const isClickable    = !isDailyDouble && mcPhase === "answering" && !isElim && !mcAnswerRevealed;
                 return (
-                  <div key={choice.label} style={{
-                    background: correct ? "linear-gradient(160deg,rgba(255,215,0,0.22),rgba(255,215,0,0.08))"
-                              : wrong   ? "rgba(255,255,255,0.02)"
-                                        : "linear-gradient(160deg,#0e2191,#091660)",
-                    border: correct ? "2px solid #ffd700"
-                          : wrong   ? "2px solid rgba(255,255,255,0.07)"
-                                    : "2px solid #1a3aab",
-                    borderRadius:14, padding:"16px 24px",
-                    display:"flex", alignItems:"center", gap:18,
-                    transition:"border 0.3s, background 0.3s",
-                    boxShadow: correct ? "0 0 20px rgba(255,215,0,0.25)" : "none",
-                  }}>
+                  <div key={choice.label}
+                    onClick={() => isClickable && handleMcChoiceTap(idx)}
+                    className={isClickable ? "reveal-hover" : ""}
+                    style={{
+                      background: isRevealedCorrect ? "linear-gradient(160deg,rgba(255,215,0,0.22),rgba(255,215,0,0.08))"
+                                : isElim            ? "rgba(255,255,255,0.015)"
+                                : isRevealedWrong   ? "rgba(255,255,255,0.02)"
+                                                    : "linear-gradient(160deg,#0e2191,#091660)",
+                      border: isRevealedCorrect ? "2px solid #ffd700"
+                            : isElim            ? "2px solid rgba(244,63,94,0.22)"
+                            : isRevealedWrong   ? "2px solid rgba(255,255,255,0.07)"
+                            : isClickable       ? "2px solid rgba(255,215,0,0.5)"
+                                                : "2px solid #1a3aab",
+                      borderRadius:14, padding:"16px 24px",
+                      display:"flex", alignItems:"center", gap:18, position:"relative",
+                      transition:"border 0.25s, background 0.25s",
+                      boxShadow: isRevealedCorrect ? "0 0 20px rgba(255,215,0,0.25)" : "none",
+                      opacity: isElim ? 0.38 : isRevealedWrong ? 0.32 : 1,
+                      cursor: isClickable ? "pointer" : "default",
+                    }}>
                     <span style={{ fontSize:30, fontWeight:700, flexShrink:0, minWidth:34,
-                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "#ffd700" }}>
-                      {choice.label}
+                      color: isRevealedCorrect ? "#ffd700" : isElim ? "#f43f5e" : isRevealedWrong ? "rgba(255,255,255,0.18)" : "#ffd700" }}>
+                      {isElim ? "✗" : choice.label}
                     </span>
-                    <span style={{ fontSize:24, lineHeight:1.3,
-                      color: correct ? "#ffd700" : wrong ? "rgba(255,255,255,0.18)" : "white",
-                      fontWeight: correct ? 600 : 400, textTransform:"uppercase" }}>
+                    <span style={{ fontSize:24, lineHeight:1.3, textTransform:"uppercase",
+                      color: isRevealedCorrect ? "#ffd700" : isElim ? "rgba(255,255,255,0.28)" : isRevealedWrong ? "rgba(255,255,255,0.18)" : "white",
+                      fontWeight: isRevealedCorrect ? 600 : 400,
+                      textDecoration: isElim ? "line-through" : "none" }}>
                       {choice.text}
                     </span>
+                    {isElim && elimEntry && (
+                      <span style={{ position:"absolute", right:14, top:7, fontSize:10, letterSpacing:2, color:TEAM_COLORS[elimEntry.teamIdx], opacity:0.8 }}>
+                        {teams[elimEntry.teamIdx].name.toUpperCase()}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -1667,45 +1718,115 @@ function QuestionScreen({ q, selected, isDailyDouble, ddPhase, setDdPhase, revea
           )}
 
           {/* Controls */}
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:18, width:"100%", maxWidth:1400 }}>
-            {!revealed ? (
-              <button onClick={() => { sounds.revealAnswer(); setRevealed(true); }} className="reveal-hover"
-                style={{ padding:"24px 120px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:26, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.15s" }}>
-                REVEAL ANSWER
-              </button>
-            ) : (
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16, width:"100%", maxWidth:1400 }}>
+            {multiChoice && !isDailyDouble ? (
+              /* ── MC buzz-in flow ── */
               <>
-                <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:4 }}>SCORE THIS QUESTION</div>
-                <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
-                  {(isDailyDouble ? [{ team: teams[ddTeamIdx], idx: ddTeamIdx }] : teams.map((team, idx) => ({ team, idx }))).map(({ team: t, idx: i }) => {
-                    const dec = teamDecision[i];
-                    return (
-                      <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 20px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:14, minWidth:200, flex:1, maxWidth:300 }}>
-                        <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
-                        <div style={{ fontSize:22, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>{dollar(t.score)}</div>
-                        <div style={{ display:"flex", gap:7 }}>
-                          <button onClick={() => toggleDecision(i, "award")}
-                            style={{ padding:"10px 12px", background: dec==="award" ? "rgba(34,197,94,0.32)" : "rgba(34,197,94,0.07)", border: dec==="award" ? "2px solid #22c55e" : "2px solid rgba(34,197,94,0.22)", borderRadius:10, color: dec==="award" ? "#22c55e" : "rgba(34,197,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
-                            +{dollar(effectivePts)}<br/><span style={{fontSize:10}}>CORRECT</span>
-                          </button>
-                          <button onClick={() => setTeamDecision(prev => { const n=[...prev]; n[i]=null; return n; })}
-                            style={{ padding:"10px 12px", background: dec===null ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)", border: dec===null ? "2px solid rgba(255,255,255,0.35)" : "2px solid rgba(255,255,255,0.08)", borderRadius:10, color: dec===null ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.22)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
-                            NO<br/><span style={{fontSize:10}}>CHANGE</span>
-                          </button>
-                          <button onClick={() => toggleDecision(i, "deduct")}
-                            style={{ padding:"10px 12px", background: dec==="deduct" ? "rgba(244,63,94,0.32)" : "rgba(244,63,94,0.07)", border: dec==="deduct" ? "2px solid #f43f5e" : "2px solid rgba(244,63,94,0.22)", borderRadius:10, color: dec==="deduct" ? "#f43f5e" : "rgba(244,63,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
-                            -{dollar(effectivePts)}<br/><span style={{fontSize:10}}>WRONG</span>
-                          </button>
-                        </div>
+                {mcPhase === "pick-team" && (
+                  <>
+                    <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:4 }}>
+                      {mcEliminated.length > 0 ? "WHICH TEAM ANSWERS NEXT?" : "WHICH TEAM IS ANSWERING?"}
+                    </div>
+                    <div style={{ display:"flex", gap:12, flexWrap:"wrap", justifyContent:"center" }}>
+                      {teams.map((t, i) => (
+                        <button key={i} onClick={() => { setMcActiveTeam(i); setMcPhase("answering"); }} className="award-hover"
+                          style={{ padding:"16px 32px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:12, color:TEAM_COLORS[i], fontSize:18, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s", minWidth:160 }}>
+                          {t.name}
+                          <span style={{ display:"block", fontSize:13, color:"rgba(255,255,255,0.4)", fontWeight:400, letterSpacing:2 }}>{dollar(t.score)}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={handleMcClose}
+                      style={{ marginTop:2, padding:"10px 36px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.12)", color:"rgba(255,255,255,0.38)", borderRadius:10, fontSize:13, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                      CLOSE — REVEAL ANSWER
+                    </button>
+                  </>
+                )}
+
+                {mcPhase === "answering" && (
+                  <>
+                    <div style={{ fontSize:16, color:TEAM_COLORS[mcActiveTeam], letterSpacing:4, fontWeight:700 }}>
+                      {teams[mcActiveTeam].name.toUpperCase()} — TAP THEIR ANSWER ABOVE
+                    </div>
+                    <div style={{ display:"flex", gap:10 }}>
+                      <button onClick={() => { setMcActiveTeam(null); setMcPhase("pick-team"); }}
+                        style={{ padding:"10px 24px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.12)", color:"rgba(255,255,255,0.38)", borderRadius:10, fontSize:13, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                        ← CHANGE TEAM
+                      </button>
+                      <button onClick={handleMcClose}
+                        style={{ padding:"10px 24px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.12)", color:"rgba(255,255,255,0.38)", borderRadius:10, fontSize:13, fontWeight:700, letterSpacing:3, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                        CLOSE — REVEAL ANSWER
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {(mcPhase === "correct" || mcPhase === "closed") && (
+                  <>
+                    {mcPhase === "correct" ? (
+                      <div style={{ fontSize:18, color:"#22c55e", letterSpacing:4, fontWeight:700 }}>
+                        {teams[mcActiveTeam].name.toUpperCase()} GOT IT RIGHT!
                       </div>
-                    );
-                  })}
-                </div>
-                <button onClick={handleDone} className="reveal-hover"
-                  style={{ marginTop:6, padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
-                  DONE — BACK TO BOARD
-                </button>
+                    ) : (
+                      <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:4 }}>QUESTION CLOSED</div>
+                    )}
+                    {mcScoreDeltas.some(d => d !== 0) && (
+                      <div style={{ display:"flex", gap:16, flexWrap:"wrap", justifyContent:"center" }}>
+                        {mcScoreDeltas.map((delta, i) => delta !== 0 && (
+                          <span key={i} style={{ fontSize:15, letterSpacing:2, fontWeight:700, color: delta > 0 ? "#22c55e" : "#f43f5e" }}>
+                            {delta > 0 ? `+${dollar(delta)}` : `-${dollar(Math.abs(delta))}`} {teams[i].name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={handleMcDone} className="reveal-hover"
+                      style={{ padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                      DONE — BACK TO BOARD
+                    </button>
+                  </>
+                )}
               </>
+            ) : (
+              /* ── Open-answer / Daily Double flow ── */
+              !revealed ? (
+                <button onClick={() => { sounds.revealAnswer(); setRevealed(true); }} className="reveal-hover"
+                  style={{ padding:"24px 120px", background:"linear-gradient(180deg,#ffd700,#c8a000)", color:"#060b2e", border:"none", borderRadius:14, fontSize:26, fontWeight:700, letterSpacing:5, cursor:"pointer", fontFamily:"'Oswald',sans-serif", boxShadow:"0 4px 24px rgba(255,215,0,0.4)", transition:"all 0.15s" }}>
+                  REVEAL ANSWER
+                </button>
+              ) : (
+                <>
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", letterSpacing:4 }}>SCORE THIS QUESTION</div>
+                  <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
+                    {(isDailyDouble ? [{ team: teams[ddTeamIdx], idx: ddTeamIdx }] : teams.map((team, idx) => ({ team, idx }))).map(({ team: t, idx: i }) => {
+                      const dec = teamDecision[i];
+                      return (
+                        <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10, padding:"18px 20px", background:TEAM_BG[i], border:`2px solid ${TEAM_COLORS[i]}`, borderRadius:14, minWidth:200, flex:1, maxWidth:300 }}>
+                          <div style={{ fontSize:15, color:TEAM_COLORS[i], letterSpacing:3 }}>{t.name.toUpperCase()}</div>
+                          <div style={{ fontSize:22, fontWeight:700, color:"white", fontVariantNumeric:"tabular-nums" }}>{dollar(t.score)}</div>
+                          <div style={{ display:"flex", gap:7 }}>
+                            <button onClick={() => toggleDecision(i, "award")}
+                              style={{ padding:"10px 12px", background: dec==="award" ? "rgba(34,197,94,0.32)" : "rgba(34,197,94,0.07)", border: dec==="award" ? "2px solid #22c55e" : "2px solid rgba(34,197,94,0.22)", borderRadius:10, color: dec==="award" ? "#22c55e" : "rgba(34,197,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                              +{dollar(effectivePts)}<br/><span style={{fontSize:10}}>CORRECT</span>
+                            </button>
+                            <button onClick={() => setTeamDecision(prev => { const n=[...prev]; n[i]=null; return n; })}
+                              style={{ padding:"10px 12px", background: dec===null ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)", border: dec===null ? "2px solid rgba(255,255,255,0.35)" : "2px solid rgba(255,255,255,0.08)", borderRadius:10, color: dec===null ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.22)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                              NO<br/><span style={{fontSize:10}}>CHANGE</span>
+                            </button>
+                            <button onClick={() => toggleDecision(i, "deduct")}
+                              style={{ padding:"10px 12px", background: dec==="deduct" ? "rgba(244,63,94,0.32)" : "rgba(244,63,94,0.07)", border: dec==="deduct" ? "2px solid #f43f5e" : "2px solid rgba(244,63,94,0.22)", borderRadius:10, color: dec==="deduct" ? "#f43f5e" : "rgba(244,63,94,0.45)", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Oswald',sans-serif", letterSpacing:1, transition:"all 0.15s", lineHeight:1.4 }}>
+                              -{dollar(effectivePts)}<br/><span style={{fontSize:10}}>WRONG</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={handleDone} className="reveal-hover"
+                    style={{ marginTop:6, padding:"16px 56px", background:"rgba(255,255,255,0.08)", border:"2px solid rgba(255,255,255,0.2)", color:"white", borderRadius:12, fontSize:18, fontWeight:700, letterSpacing:4, cursor:"pointer", fontFamily:"'Oswald',sans-serif", transition:"all 0.15s" }}>
+                    DONE — BACK TO BOARD
+                  </button>
+                </>
+              )
             )}
           </div>
         </div>
